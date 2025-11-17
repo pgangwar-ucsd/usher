@@ -114,7 +114,7 @@ void reload_trees(TreeCollectionPtr &to_replace, const std::vector<std::string>&
         }
     }
     to_replace.reset(next);
-    init.terminate();
+    //init.terminate();
     fprintf(stderr, "finish loading the tree\n");
 }
 void refresh_tree(TreeCollectionPtr &to_replace, std::fstream &tree_paths) {
@@ -497,6 +497,10 @@ static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
                      sample_start_idx, sample_end_idx, low_confidence_samples,
                      position_wise_out, false);
         fputc('\n', f);
+
+        // RIPPLES SERVER INTEGRATION
+        //MAT::Tree T_new = tree.copy_tree();
+
     }
     fputc(4, f);
     fputc('\n', f);
@@ -583,7 +587,7 @@ static void tree_update_watch(int refresh_period, std::mutex& done_mutex,std::co
                     }
                 }
             }
-            init.terminate();
+            //init.terminate();
         }
     }
 }

@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/types.h>
+#include <tbb/global_control.h>
+#include <tbb/info.h>
 
 namespace po = boost::program_options;
 namespace MAT = Mutation_Annotated_Tree;
@@ -30,7 +32,8 @@ int main(int argc, char** argv) {
     //Variables to load command-line options using Boost program_options
     std::string arg_dirname;
     std::string MAT_list_filename;
-    uint32_t num_cores = tbb::task_scheduler_init::default_num_threads();
+    //uint32_t num_cores = tbb::task_scheduler_init::default_num_threads();
+    uint32_t num_cores = tbb::global_control::max_allowed_parallelism;
     po::options_description desc{"Options"};
     uint32_t sleep_length;
     uint32_t termination_character;
@@ -81,7 +84,8 @@ int main(int argc, char** argv) {
     // timer object to be used to measure runtimes of individual stages
     Timer timer;
     fprintf(stderr, "Initializing %u worker threads.\n\n", num_threads);
-    tbb::task_scheduler_init init(num_threads);
+    //tbb::task_scheduler_init init(num_threads);
+    tbb::global_control global_limit(tbb::global_control::max_allowed_parallelism, num_threads);
 
 
     //MAT that is used in the iteration
