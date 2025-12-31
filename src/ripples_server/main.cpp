@@ -1,14 +1,34 @@
-#include <src/mutation_annotated_tree.hpp>
+#include <src/matOptimize/mutation_annotated_tree.hpp>
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
-#include "src/usher_graph.hpp"
-#include "src/usher_common.hpp"
-#include "src/ripples/ripples_fast/ripples_runner.hpp"
+//#include "src/usher_graph.hpp"
+//#include "src/usher_common.hpp"
+//#include "src/ripples/ripples_fast/ripples_runner.hpp"
+#include <sys/time.h>
+#include <tbb/task_scheduler_init.h>
 
 namespace po = boost::program_options;
 namespace MAT = Mutation_Annotated_Tree;
+
+class Timer {
+  private:
+    struct timeval m_StartTime, m_EndTime;
+  public:
+    void Start() {
+        gettimeofday(&m_StartTime, NULL);
+    }
+    long Stop() {
+        long useconds, seconds, mseconds;
+        gettimeofday(&m_EndTime, NULL);
+        useconds = m_EndTime.tv_usec - m_StartTime.tv_usec;
+        seconds = m_EndTime.tv_sec - m_StartTime.tv_sec;
+        mseconds = ((seconds) * 1000 + useconds/1000.0 + 0.5);
+        return mseconds;
+    }
+
+};
 
 int main(int argc, char** argv) {
     std::string tree_filename;
@@ -53,7 +73,8 @@ int main(int argc, char** argv) {
     // Load mutation-annotated tree
     timer.Start();
     fprintf(stderr, "Loading existing mutation-annotated tree from file %s\n", tree_filename.c_str());
-    T = MAT::load_mutation_annotated_tree(tree_filename);
+    //T = MAT::load_mutation_annotated_tree(tree_filename);
+    MAT::load_mutation_annotated_tree(tree_filename, T);
 
     if (T.root == NULL) {
         fprintf(stderr, "ERROR: Empty tree.\n");
@@ -62,7 +83,8 @@ int main(int argc, char** argv) {
 
     T.uncondense_leaves();
     fprintf(stderr, "Tree loaded in %ld msec \n\n", timer.Stop());
-    fprintf(stderr, "LEAVES: %ld\n\n", T.get_num_leaves());
+    //fprintf(stderr, "LEAVES: %ld\n\n", T.get_num_leaves());
+    fprintf(stderr, "LEAVES: %ld\n\n", T.get_leaves().size());
 
     // Loading Sequence List
     timer.Start();
@@ -95,6 +117,7 @@ int main(int argc, char** argv) {
     fprintf(stderr, "Sequences loaded in %ld msec \n\n", timer.Stop());
 
     // Loading Sequences
+    /*
     fprintf(stderr, "Loading the sequences from file %s\n", vcf_filename.c_str());
     std::vector<Missing_Sample> vcf_samples;
     if (vcf_filename != "")
@@ -119,59 +142,60 @@ int main(int argc, char** argv) {
                 }
                 else if (header_found) 
                 {
-                    std::vector<std::string> alleles;
-                    //Checking for different alleles at a site
-                    MAT::string_split(words[4], ',', alleles);
-                    for (int j = 9; j < (int)words.size(); j++) 
-                    {
-                        int idx = j - 9;
-                        auto iter = vcf_samples.begin();
-                        std::advance(iter, idx);
+                    //std::vector<std::string> alleles;
+                    ////Checking for different alleles at a site
+                    //MAT::string_split(words[4], ',', alleles);
+                    //for (int j = 9; j < (int)words.size(); j++) 
+                    //{
+                    //    int idx = j - 9;
+                    //    auto iter = vcf_samples.begin();
+                    //    std::advance(iter, idx);
 
-                        MAT::Mutation m;
-                        m.chrom = words[0];
-                        m.position = std::stoi(words[1]);
-                        //Checking the mutating allele value within the allele sizes
-                        if (std::stoi(words[j]) > int(alleles.size())) 
-                        {
-                            fprintf(stderr, "\n\nVCF ERROR at Position: %d, idx = %d, Allele_id: %d, Alleles_size: %ld\n\n", m.position, idx, std::stoi(words[j]), alleles.size());
-                        }
-                        m.ref_nuc = MAT::get_nuc_id(words[3][0]);
-                        assert((m.ref_nuc & (m.ref_nuc-1)) == 0); //check if it is power of 2
-                        m.par_nuc = m.ref_nuc;
-                        // Alleles such as '.' should be treated as missing
-                        // data. if the word is numeric, it is an index to one
-                        // of the alleles
-                        if (isdigit(words[j][0])) {
-                            int allele_id = std::stoi(words[j]);
-                            if (allele_id > 0) {
-                                std::string allele = alleles[allele_id-1];
-                                if (allele[0] == 'N') {
-                                    m.is_missing = true;
-                                    m.mut_nuc = MAT::get_nuc_id('N');
-                                } 
-                                else {
-                                    auto nuc = MAT::get_nuc_id(allele[0]);
-                                    if (nuc == MAT::get_nuc_id('N')) {
-                                        m.is_missing = true;
-                                    } 
-                                    else {
-                                        m.is_missing = false;
-                                    }
-                                    m.mut_nuc = nuc;
-                                }
-                                (*iter).mutations.emplace_back(m);
-                            }
-                        } 
-                        else {
-                            m.is_missing = true;
-                            m.mut_nuc = MAT::get_nuc_id('N');
-                            (*iter).mutations.emplace_back(m);
-                        }
-                        if ((m.mut_nuc & (m.mut_nuc-1)) !=0) {
-                            (*iter).num_ambiguous++;
-                        }
-                    }
+                    //    MAT::Mutation m;
+                    //    //m.chrom = words[0];
+                    //    m.chrom_idx = words[0];
+                    //    m.position = std::stoi(words[1]);
+                    //    //Checking the mutating allele value within the allele sizes
+                    //    if (std::stoi(words[j]) > int(alleles.size())) 
+                    //    {
+                    //        fprintf(stderr, "\n\nVCF ERROR at Position: %d, idx = %d, Allele_id: %d, Alleles_size: %ld\n\n", m.position, idx, std::stoi(words[j]), alleles.size());
+                    //    }
+                    //    m.ref_nuc = MAT::get_nuc_id(words[3][0]);
+                    //    assert((m.ref_nuc & (m.ref_nuc-1)) == 0); //check if it is power of 2
+                    //    m.par_nuc = m.ref_nuc;
+                    //    // Alleles such as '.' should be treated as missing
+                    //    // data. if the word is numeric, it is an index to one
+                    //    // of the alleles
+                    //    if (isdigit(words[j][0])) {
+                    //        int allele_id = std::stoi(words[j]);
+                    //        if (allele_id > 0) {
+                    //            std::string allele = alleles[allele_id-1];
+                    //            if (allele[0] == 'N') {
+                    //                m.is_missing = true;
+                    //                m.mut_nuc = MAT::get_nuc_id('N');
+                    //            } 
+                    //            else {
+                    //                auto nuc = MAT::get_nuc_id(allele[0]);
+                    //                if (nuc == MAT::get_nuc_id('N')) {
+                    //                    m.is_missing = true;
+                    //                } 
+                    //                else {
+                    //                    m.is_missing = false;
+                    //                }
+                    //                m.mut_nuc = nuc;
+                    //            }
+                    //            (*iter).mutations.emplace_back(m);
+                    //        }
+                    //    } 
+                    //    else {
+                    //        m.is_missing = true;
+                    //        m.mut_nuc = MAT::get_nuc_id('N');
+                    //        (*iter).mutations.emplace_back(m);
+                    //    }
+                    //    if ((m.mut_nuc & (m.mut_nuc-1)) !=0) {
+                    //        (*iter).num_ambiguous++;
+                    //    }
+                    //}
                 }
             }
         }
@@ -182,8 +206,10 @@ int main(int argc, char** argv) {
     {
         fprintf(stderr, "No VCF file provided! \n");
     }
+    */
 
     // Finding missing samples
+    /*
     std::vector<Missing_Sample> missing_samples;
     for (auto s: sample_names)
     {
@@ -202,34 +228,33 @@ int main(int argc, char** argv) {
             }
         }
     }
+    */
 
-    // Adding missing samples to tree
-    if (missing_samples.size())
+    //// Adding missing samples to tree
+    //if (missing_samples.size())
     {
         // Copying the Tree
         timer.Start();
-        MAT::Tree T_new = T.fast_tree_copy();
+        MAT::Tree T_new = T.fast_copy_tree();
         fprintf(stderr, "\nTree copied in %ld msec \n\n", timer.Stop());
-            
-        std::vector<std::string> low_confidence_samples;
-        int return_val = usher_common("", ".", 1, 1e6, 1e6,
-                            false, false, false, false, false,
-                            false, false, false, false, false,
-                            false, 0, 0, missing_samples, low_confidence_samples, &T_new);
-
-        if(return_val != 0) {
-            exit(1);
-        }
         
-        // FIX for new nodes NOT present in all_nodes
-        T_new.update_all_nodes(T_new.depth_first_expansion());
+        //std::vector<std::string> low_confidence_samples;
+        //int return_val = usher_common("", ".", 1, 1e6, 1e6,
+        //                    false, false, false, false, false,
+        //                    false, false, false, false, false,
+        //                    false, 0, 0, missing_samples, low_confidence_samples, &T_new);
 
-				// Set ripples-fast parameters
-				uint32_t branch_len = 3;
-        std::string outdir = ".";
-        uint32_t num_desc = 10;
-        ripples_runner runner(T_new, missing_samples, num_threads, branch_len,
-                              num_desc, outdir);
-        runner();
+        //if(return_val != 0) {
+        //    exit(1);
+        //}
+        
+
+		//// Set ripples-fast parameters
+		//uint32_t branch_len = 3;
+        //std::string outdir = ".";
+        //uint32_t num_desc = 10;
+        //ripples_runner runner(T_new, missing_samples, num_threads, branch_len,
+        //                      num_desc, outdir);
+        //runner();
     }
 }

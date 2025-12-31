@@ -82,15 +82,15 @@ if(DEFINED Protobuf_PATH)
         )
     
     add_executable(ripples_server
-        src/mutation_annotated_tree.cpp
-        src/usher_mapper.cpp
-        src/usher_common.cpp
-        src/ripples/ripples_fast/ripples_runner.cpp
-        src/ripples/ripples_fast/ripples_util.cpp
-        src/ripples/ripples_fast/ripples.cpp
-        src/ripples/ripples_fast/ripple_aux.cpp
-        src/ripples/ripples_fast/ripple_merger.cpp
-        src/ripples/ripples_fast/ripples_mapper.cpp
+        src/matOptimize/mutation_annotated_tree_node.cpp
+        src/matOptimize/mutation_annotated_tree_load_store.cpp
+        src/matOptimize/mutation_annotated_tree.cpp
+        src/matOptimize/mutation_annotated_tree_nuc_util.cpp
+        src/matOptimize/Mutation_Collection.cpp
+        src/matOptimize/condense.cpp
+        src/matOptimize/check_samples.cpp
+        src/matOptimize/detailed_mutations_store.cpp
+        src/matOptimize/detailed_mutations_load.cpp
         ${RIPPLES_SERVER_SRCS}
         )
 
@@ -309,18 +309,20 @@ else()
         )
 
     add_executable(ripples_server
-        src/mutation_annotated_tree.cpp
-        src/usher_mapper.cpp
-        src/usher_common.cpp
-        src/ripples/ripples_fast/ripples_runner.cpp
-        src/ripples/ripples_fast/ripples_util.cpp
-        src/ripples/ripples_fast/ripples.cpp
-        src/ripples/ripples_fast/ripple_aux.cpp
-        src/ripples/ripples_fast/ripple_merger.cpp
-        src/ripples/ripples_fast/ripples_mapper.cpp
+        src/matOptimize/mutation_annotated_tree_node.cpp
+        src/matOptimize/mutation_annotated_tree_load_store.cpp
+        src/matOptimize/mutation_annotated_tree.cpp
+        src/matOptimize/mutation_annotated_tree_nuc_util.cpp
+        src/matOptimize/Mutation_Collection.cpp
+        src/matOptimize/condense.cpp
+        src/matOptimize/check_samples.cpp
+        src/matOptimize/detailed_mutations_store.cpp
+        src/matOptimize/detailed_mutations_load.cpp
         ${RIPPLES_SERVER_SRCS}
         ${PROTO_SRCS}
         ${PROTO_HDRS}
+        ${DETAILED_MUTATIONS_PROTO_SRCS}
+        ${DETAILED_MUTATIONS_PROTO_HDRS}
         )
 
     add_executable(ripples
@@ -536,7 +538,7 @@ TARGET_COMPILE_OPTIONS(matUtils PRIVATE -DTBB_SUPPRESS_DEPRECATED_MESSAGES)
 TARGET_LINK_LIBRARIES(matUtils PRIVATE stdc++  ${Boost_LIBRARIES} ${TBB_IMPORTED_TARGETS} ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
 
 TARGET_COMPILE_OPTIONS(ripples_server PRIVATE -DTBB_SUPPRESS_DEPRECATED_MESSAGES)
-TARGET_LINK_LIBRARIES(ripples_server PRIVATE stdc++ ${Boost_LIBRARIES} ${TBB_IMPORTED_TARGETS} ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
+TARGET_LINK_LIBRARIES(ripples_server PRIVATE stdc++ ${Boost_LIBRARIES} ${TBB_IMPORTED_TARGETS} ${Protobuf_LIBRARIES} ZLIB::ZLIB ${MPI_CXX_LIBRARIES}) # OpenMP::OpenMP_CXX)
 
 TARGET_LINK_LIBRARIES(ripplesUtils PRIVATE stdc++  ${Boost_LIBRARIES} ${TBB_IMPORTED_TARGETS} ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
 TARGET_LINK_LIBRARIES(ripplesInit PRIVATE stdc++  ${Boost_LIBRARIES} ${TBB_IMPORTED_TARGETS} ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)

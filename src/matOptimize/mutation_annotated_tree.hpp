@@ -427,10 +427,17 @@ class Node {
     bool have_masked;
     bool is_leaf() const;
     bool is_root();
-    //Node();
+    
+    Node();
+    
     Node(size_t id);
 
     Node(const Node& other, Node* parent,Tree* tree,bool copy_mutation=true);
+
+    Node(const Node& other);
+
+    Node(Node&& other) noexcept;
+
     bool add_mutation(Mutation& mut) {
         return mutations.insert(mut,Mutations_Collection::KEEP_OTHER);
     }
@@ -503,6 +510,7 @@ class Tree {
     std::unordered_map<size_t,  std::string> node_names;
     std::unordered_map<std::string, size_t> node_name_to_idx_map;
     size_t node_idx;
+    std::vector<Node> nodes_vector;
   public:
     typedef  tbb::concurrent_unordered_map<size_t, std::vector<std::string>> condensed_node_t;
     size_t root_ident;
@@ -646,6 +654,9 @@ class Tree {
     std::string get_newick_string(Node* node, bool b1, bool b2, bool b3=false, bool b4=false) const;
     void rotate_for_display(bool reverse = false);
     Tree copy_tree();
+
+    // Copy Tree Fast
+    Tree fast_copy_tree();
 };
 
 Tree create_tree_from_newick (std::string filename);
