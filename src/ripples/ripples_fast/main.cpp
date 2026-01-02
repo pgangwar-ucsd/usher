@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
                         words[0].c_str());
                 exit(1);
             } else {
-                for (auto anc : T.rsearch(T.get_node(n->node_id), true)) {
+                for (auto anc : T.rsearch(n, true)) {
                      if (anc->is_root()) {
                          continue;
                      }
