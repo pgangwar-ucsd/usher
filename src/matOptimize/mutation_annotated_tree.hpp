@@ -510,7 +510,6 @@ class Tree {
     std::unordered_map<size_t,  std::string> node_names;
     std::unordered_map<std::string, size_t> node_name_to_idx_map;
     size_t node_idx;
-    std::vector<Node> nodes_vector;
   public:
     typedef  tbb::concurrent_unordered_map<size_t, std::vector<std::string>> condensed_node_t;
     size_t root_ident;
@@ -655,8 +654,7 @@ class Tree {
     void rotate_for_display(bool reverse = false);
     Tree copy_tree();
 
-    // Copy Tree Fast
-    Tree fast_copy_tree();
+    // Adding new functions for ripples
     std::vector<Node *> rsearch(Node *node, bool include_self) const;
 };
 

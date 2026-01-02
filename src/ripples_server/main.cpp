@@ -234,7 +234,7 @@ int main(int argc, char** argv) {
     {
         // Copying the Tree
         timer.Start();
-        MAT::Tree T_new = T.fast_copy_tree();
+        MAT::Tree T_new = T.copy_tree();
         fprintf(stderr, "\nTree copied in %ld msec \n\n", timer.Stop());
         
         //std::vector<std::string> low_confidence_samples;
