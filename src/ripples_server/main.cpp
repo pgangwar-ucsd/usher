@@ -97,7 +97,6 @@ int main(int argc, char** argv) {
     fprintf(stderr, "Sequences loaded in %ld msec \n\n", timer.Stop());
 
     // Loading Sequences
-    /*
     fprintf(stderr, "Loading the sequences from file %s\n", vcf_filename.c_str());
     std::vector<Missing_Sample> vcf_samples;
     if (vcf_filename != "")
@@ -122,60 +121,68 @@ int main(int argc, char** argv) {
                 }
                 else if (header_found) 
                 {
-                    //std::vector<std::string> alleles;
-                    ////Checking for different alleles at a site
-                    //MAT::string_split(words[4], ',', alleles);
-                    //for (int j = 9; j < (int)words.size(); j++) 
-                    //{
-                    //    int idx = j - 9;
-                    //    auto iter = vcf_samples.begin();
-                    //    std::advance(iter, idx);
+                    std::vector<std::string> alleles;
+                    //Checking for different alleles at a site
+                    MAT::string_split(words[4], ',', alleles);
+                    for (int j = 9; j < (int)words.size(); j++) 
+                    {
+                        int idx = j - 9;
+                        auto iter = vcf_samples.begin();
+                        std::advance(iter, idx);
 
-                    //    MAT::Mutation m;
-                    //    //m.chrom = words[0];
-                    //    m.chrom_idx = words[0];
-                    //    m.position = std::stoi(words[1]);
-                    //    //Checking the mutating allele value within the allele sizes
-                    //    if (std::stoi(words[j]) > int(alleles.size())) 
-                    //    {
-                    //        fprintf(stderr, "\n\nVCF ERROR at Position: %d, idx = %d, Allele_id: %d, Alleles_size: %ld\n\n", m.position, idx, std::stoi(words[j]), alleles.size());
-                    //    }
-                    //    m.ref_nuc = MAT::get_nuc_id(words[3][0]);
-                    //    assert((m.ref_nuc & (m.ref_nuc-1)) == 0); //check if it is power of 2
-                    //    m.par_nuc = m.ref_nuc;
-                    //    // Alleles such as '.' should be treated as missing
-                    //    // data. if the word is numeric, it is an index to one
-                    //    // of the alleles
-                    //    if (isdigit(words[j][0])) {
-                    //        int allele_id = std::stoi(words[j]);
-                    //        if (allele_id > 0) {
-                    //            std::string allele = alleles[allele_id-1];
-                    //            if (allele[0] == 'N') {
-                    //                m.is_missing = true;
-                    //                m.mut_nuc = MAT::get_nuc_id('N');
-                    //            } 
-                    //            else {
-                    //                auto nuc = MAT::get_nuc_id(allele[0]);
-                    //                if (nuc == MAT::get_nuc_id('N')) {
-                    //                    m.is_missing = true;
-                    //                } 
-                    //                else {
-                    //                    m.is_missing = false;
-                    //                }
-                    //                m.mut_nuc = nuc;
-                    //            }
-                    //            (*iter).mutations.emplace_back(m);
-                    //        }
-                    //    } 
-                    //    else {
-                    //        m.is_missing = true;
-                    //        m.mut_nuc = MAT::get_nuc_id('N');
-                    //        (*iter).mutations.emplace_back(m);
-                    //    }
-                    //    if ((m.mut_nuc & (m.mut_nuc-1)) !=0) {
-                    //        (*iter).num_ambiguous++;
-                    //    }
-                    //}
+                        //m.chrom = words[0];
+                        //m.position = std::stoi(words[1]);
+                        
+                        ////Checking the mutating allele value within the allele sizes
+                        //if (std::stoi(words[j]) > int(alleles.size())) 
+                        //{
+                        //    fprintf(stderr, "\n\nVCF ERROR at Position: %d, idx = %d, Allele_id: %d, Alleles_size: %ld\n\n", m.position, idx, std::stoi(words[j]), alleles.size());
+                        //}
+
+                        //m.ref_nuc = MAT::get_nuc_id(words[3][0]);
+                        //assert((m.ref_nuc & (m.ref_nuc-1)) == 0); //check if it is power of 2
+                        //m.par_nuc = m.ref_nuc;
+                        
+                        // Alleles such as '.' should be treated as missing
+                        // data. if the word is numeric, it is an index to one
+                        // of the alleles
+                        int8_t mut_nuc = MAT::get_nuc_id('N');
+                        if (isdigit(words[j][0])) {
+                            int allele_id = std::stoi(words[j]);
+                            if (allele_id > 0) {
+                                std::string allele = alleles[allele_id-1];
+                                if (allele[0] == 'N') {
+                                    //m.is_missing = true;
+                                    //m.mut_nuc = MAT::get_nuc_id('N');
+                                    mut_nuc = MAT::get_nuc_id('N');
+                                } 
+                                else {
+                                    auto nuc = MAT::get_nuc_id(allele[0]);
+                                    //if (nuc == MAT::get_nuc_id('N')) {
+                                    //    m.is_missing = true;
+                                    //} 
+                                    //else {
+                                    //    m.is_missing = false;
+                                    //}
+                                    //m.mut_nuc = nuc;
+                                    mut_nuc = nuc;
+                                }
+                                //(*iter).mutations.emplace_back(m);
+                            }
+                        } 
+                        else {
+                            //m.is_missing = true;
+                            //m.mut_nuc = MAT::get_nuc_id('N');
+                            //(*iter).mutations.emplace_back(m);
+                            mut_nuc = MAT::get_nuc_id('N');
+                        }
+                        //if ((m.mut_nuc & (m.mut_nuc-1)) !=0) {
+                        //    (*iter).num_ambiguous++;
+                        //}
+                        
+                        MAT::Mutation m(words[0], std::stoi(words[1]), nuc_one_hot(mut_nuc), nuc_one_hot(MAT::get_nuc_id(words[3][0])), 0, nuc_one_hot(MAT::get_nuc_id(words[3][0])));
+                        (*iter).mutations.emplace_back(m);
+                    }
                 }
             }
         }
@@ -186,32 +193,44 @@ int main(int argc, char** argv) {
     {
         fprintf(stderr, "No VCF file provided! \n");
     }
-    */
 
     // Finding missing samples
     std::vector<Missing_Sample> missing_samples;
-    /*
-    for (auto s: sample_names)
+    for (auto s: vcf_samples)
     {
-        if (T.get_node(s) != NULL)
-        {
-            fprintf(stderr, "WARNING: %s is already present in the tree.\n", s.c_str());
-        }
-        else
+        if (T.get_node(s.name) != NULL)
         {
             auto it = std::find_if(vcf_samples.begin(), vcf_samples.end(),
                        [&](const Missing_Sample& ms) {
-                           return ms.name == s;
+                           return ms.name == s.name;
                        });
             if (it != vcf_samples.end()) {
                 missing_samples.emplace_back(*it);
             }
         }
     }
-    */
 
-    //// Adding missing samples to tree
-    //if (missing_samples.size())
+    //for (auto s: sample_names)
+    //{
+    //    if (T.get_node(s) != NULL)
+    //    {
+    //        fprintf(stderr, "WARNING: %s is already present in the tree.\n", s.c_str());
+    //    }
+    //    else
+    //    {
+    //        auto it = std::find_if(vcf_samples.begin(), vcf_samples.end(),
+    //                   [&](const Missing_Sample& ms) {
+    //                       return ms.name == s;
+    //                   });
+    //        if (it != vcf_samples.end()) {
+    //            missing_samples.emplace_back(*it);
+    //        }
+    //    }
+    //}
+
+
+    // Adding missing samples to tree
+    if (missing_samples.size())
     {
         // Copying the Tree
         timer.Start();

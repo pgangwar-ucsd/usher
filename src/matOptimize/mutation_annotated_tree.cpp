@@ -550,6 +550,8 @@ void Mutation_Annotated_Tree::Tree::rotate_for_display(bool reverse) {
 }
 std::vector<Node *> Mutation_Annotated_Tree::Tree::rsearch(Node *node, bool include_self) const{
     std::vector<Node *> output;
+    if (node == NULL)
+        return output;
     if (include_self) {
         output.push_back(node);
     }
