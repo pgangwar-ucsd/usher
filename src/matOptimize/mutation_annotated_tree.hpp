@@ -657,6 +657,7 @@ class Tree {
 
     // Copy Tree Fast
     Tree fast_copy_tree();
+    std::vector<Node *> rsearch(Node *node, bool include_self) const;
 };
 
 Tree create_tree_from_newick (std::string filename);

@@ -91,6 +91,12 @@ if(DEFINED Protobuf_PATH)
         src/matOptimize/check_samples.cpp
         src/matOptimize/detailed_mutations_store.cpp
         src/matOptimize/detailed_mutations_load.cpp
+        src/ripples/ripples_fast/ripples_runner.cpp
+        src/ripples/ripples_fast/ripples_util.cpp
+        src/ripples/ripples_fast/ripples.cpp
+        src/ripples/ripples_fast/ripple_aux.cpp
+        src/ripples/ripples_fast/ripple_merger.cpp
+        src/ripples/ripples_fast/ripples_mapper.cpp
         ${RIPPLES_SERVER_SRCS}
         )
 
@@ -100,8 +106,21 @@ if(DEFINED Protobuf_PATH)
         ${RIPPLES_SRCS}
         )
     add_executable(ripples-fast
-        src/mutation_annotated_tree.cpp
-        src/usher_mapper.cpp
+        src/ripples/ripples_fast/ripples_runner.cpp
+        src/ripples/ripples_fast/ripples_util.cpp
+        src/ripples/ripples_fast/ripples.cpp
+        src/ripples/ripples_fast/ripple_aux.cpp
+        src/ripples/ripples_fast/ripple_merger.cpp
+        src/ripples/ripples_fast/ripples_mapper.cpp
+        src/matOptimize/mutation_annotated_tree_node.cpp
+        src/matOptimize/mutation_annotated_tree_load_store.cpp
+        src/matOptimize/mutation_annotated_tree.cpp
+        src/matOptimize/mutation_annotated_tree_nuc_util.cpp
+        src/matOptimize/Mutation_Collection.cpp
+        src/matOptimize/condense.cpp
+        src/matOptimize/check_samples.cpp
+        src/matOptimize/detailed_mutations_store.cpp
+        src/matOptimize/detailed_mutations_load.cpp
         ${RIPPLES_FAST_SRCS}
         )
         add_executable(usher-sampled
@@ -318,6 +337,12 @@ else()
         src/matOptimize/check_samples.cpp
         src/matOptimize/detailed_mutations_store.cpp
         src/matOptimize/detailed_mutations_load.cpp
+        src/ripples/ripples_fast/ripples_runner.cpp
+        src/ripples/ripples_fast/ripples_util.cpp
+        src/ripples/ripples_fast/ripples.cpp
+        src/ripples/ripples_fast/ripple_aux.cpp
+        src/ripples/ripples_fast/ripple_merger.cpp
+        src/ripples/ripples_fast/ripples_mapper.cpp
         ${RIPPLES_SERVER_SRCS}
         ${PROTO_SRCS}
         ${PROTO_HDRS}
@@ -334,11 +359,26 @@ else()
         )
 
     add_executable(ripples-fast
-        src/mutation_annotated_tree.cpp
-        src/usher_mapper.cpp
+        src/ripples/ripples_fast/ripples_runner.cpp
+        src/ripples/ripples_fast/ripples_util.cpp
+        src/ripples/ripples_fast/ripples.cpp
+        src/ripples/ripples_fast/ripple_aux.cpp
+        src/ripples/ripples_fast/ripple_merger.cpp
+        src/ripples/ripples_fast/ripples_mapper.cpp
+        src/matOptimize/mutation_annotated_tree_node.cpp
+        src/matOptimize/mutation_annotated_tree_load_store.cpp
+        src/matOptimize/mutation_annotated_tree.cpp
+        src/matOptimize/mutation_annotated_tree_nuc_util.cpp
+        src/matOptimize/Mutation_Collection.cpp
+        src/matOptimize/condense.cpp
+        src/matOptimize/check_samples.cpp
+        src/matOptimize/detailed_mutations_store.cpp
+        src/matOptimize/detailed_mutations_load.cpp
         ${RIPPLES_FAST_SRCS}
         ${PROTO_SRCS}
         ${PROTO_HDRS}
+        ${DETAILED_MUTATIONS_PROTO_SRCS}
+        ${DETAILED_MUTATIONS_PROTO_HDRS}
         )
 	
     add_executable(usher-sampled
@@ -545,7 +585,7 @@ TARGET_LINK_LIBRARIES(ripplesInit PRIVATE stdc++  ${Boost_LIBRARIES} ${TBB_IMPOR
 
 TARGET_COMPILE_OPTIONS(ripples PRIVATE -DTBB_SUPPRESS_DEPRECATED_MESSAGES)
 TARGET_LINK_LIBRARIES(ripples PRIVATE stdc++  ${Boost_LIBRARIES} ${TBB_IMPORTED_TARGETS} ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
-TARGET_LINK_LIBRARIES(ripples-fast PRIVATE stdc++  ${Boost_LIBRARIES} ${TBB_IMPORTED_TARGETS} ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
+TARGET_LINK_LIBRARIES(ripples-fast PRIVATE stdc++  ${Boost_LIBRARIES} ${TBB_IMPORTED_TARGETS} ${Protobuf_LIBRARIES} ZLIB::ZLIB ${MPI_CXX_LIBRARIES}) # OpenMP::OpenMP_CXX)
 
 if(USHER_SERVER)
     TARGET_COMPILE_OPTIONS(usher_server PRIVATE -DTBB_SUPPRESS_DEPRECATED_MESSAGES)

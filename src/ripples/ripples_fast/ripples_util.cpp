@@ -6,13 +6,13 @@ inline MAT::Node *get_node_cstr(MAT::Tree &tree, char *name) {
 
 Ripple_Result_Pack* Ripple_Pipeline::operator()(MAT::Node* node_to_consider) const {
     fprintf(stderr, "At node id: %s\n",
-            node_to_consider->identifier.c_str());
+            T.get_node_name(node_to_consider->node_id).c_str());
 
     int orig_parsimony = (int)node_to_consider->mutations.size();
 
     Pruned_Sample pruned_sample(node_to_consider);
     // Find mutations on the node to prune
-    auto node_to_root = T.rsearch(node_to_consider->identifier, true);
+    auto node_to_root = T.rsearch(T.get_node(node_to_consider->node_id), true);
     for (auto curr : node_to_root) {
         for (auto m : curr->mutations) {
             pruned_sample.add_mutation(m);
@@ -50,10 +50,10 @@ void Ripple_Finalizer::operator()(Ripple_Result_Pack* result) const {
         fprintf(
             recomb_file,
             "%s\t(%i,%i)\t(%i,%s)\t%s\t%c\t%i\t%s\t%c\t%i\t%i\t%i\t%i\n",
-            node_to_consider->identifier.c_str(), p.start_range_low,
+            T.get_node_name(node_to_consider->node_id).c_str(), p.start_range_low,
             p.start_range_high, p.end_range_low, end_range_high_str.c_str(),
-            p.d.node->identifier.c_str(), p.d.is_sibling?'y':'n',
-            donor_adj_parsimony, p.a.node->identifier.c_str(),
+            T.get_node_name(p.d.node->node_id).c_str(), p.d.is_sibling?'y':'n',
+            donor_adj_parsimony, T.get_node_name(p.a.node->node_id).c_str(),
             p.a.is_sibling?'y':'n', acceptor_adj_parsimony, orig_parsimony,
             std::min(
         {orig_parsimony, donor_adj_parsimony, acceptor_adj_parsimony}),
@@ -62,9 +62,9 @@ void Ripple_Finalizer::operator()(Ripple_Result_Pack* result) const {
     }
 
     if (!valid_pairs.empty()) {
-        fprintf(desc_file, "%s\t", node_to_consider->identifier.c_str());
-        for (auto l : T.get_leaves(node_to_consider->identifier)) {
-            fprintf(desc_file, "%s,", l->identifier.c_str());
+        fprintf(desc_file, "%s\t", T.get_node_name(node_to_consider->node_id).c_str());
+        for (auto l : T.get_leaves(T.get_node(node_to_consider->node_id))) {
+            fprintf(desc_file, "%s,", T.get_node_name(l->node_id).c_str());
         }
         fprintf(desc_file, "\n");
         fflush(desc_file);

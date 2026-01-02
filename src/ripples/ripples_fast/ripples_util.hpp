@@ -1,6 +1,6 @@
 #pragma once
 #include "ripples.hpp"
-#include "src/usher_graph.hpp"
+#include "src/matOptimize/usher_graph.hpp"
 #include "tbb/concurrent_unordered_set.h"
 #include <array>
 #include <boost/filesystem.hpp>
@@ -13,12 +13,12 @@
 #define CHECK_MAPPER
 
 struct idx_hash {
-    size_t operator()(const MAT::Node *in) const { return in->dfs_idx; }
+    size_t operator()(const MAT::Node *in) const { return in->dfs_index; }
 };
 
 struct idx_eq {
     bool operator()(const MAT::Node *a, const MAT::Node *b) const {
-        return a->dfs_idx == b->dfs_idx;
+        return a->dfs_index == b->dfs_index;
     }
 };
 

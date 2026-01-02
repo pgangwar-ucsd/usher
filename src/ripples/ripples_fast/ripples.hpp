@@ -2,7 +2,12 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <signal.h>
-#include <src/mutation_annotated_tree.hpp>
+#include <src/matOptimize/mutation_annotated_tree.hpp>
+#include <unordered_set>
+#include <tbb/task_scheduler_init.h>
+#include <tbb/task.h>
+#include <tbb/pipeline.h>
+#include <tbb/parallel_for.h>
 
 namespace po = boost::program_options;
 namespace MAT = Mutation_Annotated_Tree;
@@ -24,11 +29,11 @@ struct Ripples_Mapper_Mut {
     Ripples_Mapper_Mut()
         : position(INT_MAX), mut_idx(NULL_MUT_IDX), curr_mut(0), dest_mut(0) {}
     Ripples_Mapper_Mut(const MAT::Mutation &mut, size_t idx)
-        : position(mut.position), mut_idx(idx), curr_mut(mut.ref_nuc),
-          dest_mut(mut.mut_nuc) {}
+        : position(mut.get_position()), mut_idx(idx), curr_mut(MAT::get_nuc(mut.get_ref_one_hot())),
+          dest_mut(MAT::get_nuc(mut.get_mut_one_hot())) {}
     Ripples_Mapper_Mut(const MAT::Mutation &mut)
-        : position(mut.position), mut_idx(NULL_MUT_IDX), curr_mut(mut.mut_nuc),
-          dest_mut(mut.ref_nuc) {
+        : position(mut.get_position()), mut_idx(NULL_MUT_IDX), curr_mut(MAT::get_nuc(mut.get_ref_one_hot())),
+          dest_mut(MAT::get_nuc(mut.get_mut_one_hot())) {
         // assert(mut.par_nuc == mut.ref_nuc);
     }
     Ripples_Mapper_Mut(const Ripples_Mapper_Mut &mut, char new_mut)
@@ -84,7 +89,7 @@ struct Recomb_Node {
         : node(node), node_parsimony(np), parsimony(p), is_sibling(s) {}
     inline bool operator<(const Recomb_Node &n) const {
         return (((*this).parsimony < n.parsimony) ||
-                ((this->node->identifier < n.node->identifier) &&
+                ((this->node->node_id < n.node->node_id) &&
                  ((*this).parsimony == n.parsimony)));
     }
 };

@@ -3,32 +3,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
-//#include "src/usher_graph.hpp"
-//#include "src/usher_common.hpp"
-//#include "src/ripples/ripples_fast/ripples_runner.hpp"
+#include "src/ripples/ripples_fast/ripples_runner.hpp"
 #include <sys/time.h>
 #include <tbb/task_scheduler_init.h>
 
 namespace po = boost::program_options;
 namespace MAT = Mutation_Annotated_Tree;
-
-class Timer {
-  private:
-    struct timeval m_StartTime, m_EndTime;
-  public:
-    void Start() {
-        gettimeofday(&m_StartTime, NULL);
-    }
-    long Stop() {
-        long useconds, seconds, mseconds;
-        gettimeofday(&m_EndTime, NULL);
-        useconds = m_EndTime.tv_usec - m_StartTime.tv_usec;
-        seconds = m_EndTime.tv_sec - m_StartTime.tv_sec;
-        mseconds = ((seconds) * 1000 + useconds/1000.0 + 0.5);
-        return mseconds;
-    }
-
-};
 
 int main(int argc, char** argv) {
     std::string tree_filename;
@@ -209,8 +189,8 @@ int main(int argc, char** argv) {
     */
 
     // Finding missing samples
-    /*
     std::vector<Missing_Sample> missing_samples;
+    /*
     for (auto s: sample_names)
     {
         if (T.get_node(s) != NULL)
@@ -249,12 +229,12 @@ int main(int argc, char** argv) {
         //}
         
 
-		//// Set ripples-fast parameters
-		//uint32_t branch_len = 3;
-        //std::string outdir = ".";
-        //uint32_t num_desc = 10;
-        //ripples_runner runner(T_new, missing_samples, num_threads, branch_len,
-        //                      num_desc, outdir);
-        //runner();
+		// Set ripples-fast parameters
+		uint32_t branch_len = 3;
+        std::string outdir = ".";
+        uint32_t num_desc = 10;
+        ripples_runner runner(T_new, missing_samples, num_threads, branch_len,
+                              num_desc, outdir);
+        runner();
     }
 }

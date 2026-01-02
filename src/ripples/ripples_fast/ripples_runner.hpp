@@ -2,7 +2,7 @@
 
 #include "ripples.hpp"
 #include "ripples_util.hpp"
-#include "src/usher_graph.hpp"
+#include "src/matOptimize/usher_graph.hpp"
 #include "tbb/concurrent_unordered_set.h"
 #include <array>
 #include <boost/filesystem.hpp>
@@ -41,7 +41,7 @@ struct ripples_runner {
         auto dfs = T.depth_first_expansion();
 
         for (const auto &sample : samples_) {
-            for (auto anc : T.rsearch(sample.name, true)) {
+            for (auto anc : T.rsearch(T.get_node(T.node_name_to_node_idx(sample.name)), true)) {
                 if (anc->is_root()) {
                     continue;
                 }
@@ -93,7 +93,7 @@ struct ripples_runner {
         std::vector<MAT::Node *> nodes_to_search;
         nodes_to_search.reserve(dfs.size());
         for (auto &node : dfs) {
-            if ((node->dfs_end_idx - node->dfs_idx) >= num_desc_) {
+            if ((node->dfs_end_index - node->dfs_index) >= num_desc_) {
                 nodes_to_search.push_back(node);
             }
         }
@@ -106,9 +106,9 @@ struct ripples_runner {
         std::vector<int> index_map;
         int node_to_search_idx = 0;
         index_map.reserve(dfs.size());
-        for (int dfs_idx = 0; dfs_idx < (int)dfs.size(); dfs_idx++) {
+        for (int dfs_index = 0; dfs_index < (int)dfs.size(); dfs_index++) {
             if (node_to_search_idx != (int)nodes_to_search.size() &&
-                (int)nodes_to_search[node_to_search_idx]->dfs_idx == dfs_idx) {
+                (int)nodes_to_search[node_to_search_idx]->dfs_index == dfs_index) {
                 index_map.push_back(node_to_search_idx);
                 node_to_search_idx++;
             } else {

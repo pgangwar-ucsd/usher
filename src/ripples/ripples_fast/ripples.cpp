@@ -6,7 +6,7 @@ size_t check_parallelizable(const MAT::Node *root,
                             std::vector<Mapper_Info> &traversal_track,
                             unsigned short level) {
     size_t child_counted_size = 0;
-    if ((root->dfs_end_idx - root->dfs_idx) >= check_threshold) {
+    if ((root->dfs_end_index - root->dfs_index) >= check_threshold) {
         child_counted_size++;
         auto cur_idx = traversal_track.size();
         traversal_track.push_back(
@@ -19,7 +19,7 @@ size_t check_parallelizable(const MAT::Node *root,
                 tree_height, traversal_track, level + 1);
         }
         if (child_counted_size > parallel_threshold) {
-            do_parallel[root->dfs_idx] = true;
+            do_parallel[root->dfs_index] = true;
         }
         traversal_track[cur_idx].sibling_start_idx = traversal_track.size();
         tree_height = std::max(tree_height, level);
