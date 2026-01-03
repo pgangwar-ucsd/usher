@@ -180,13 +180,15 @@ int main(int argc, char** argv) {
                         //    (*iter).num_ambiguous++;
                         //}
                         
-                        MAT::Mutation m(words[0], std::stoi(words[1]), nuc_one_hot(mut_nuc), nuc_one_hot(MAT::get_nuc_id(words[3][0])), 0, nuc_one_hot(MAT::get_nuc_id(words[3][0])));
-                        (*iter).mutations.emplace_back(m);
+                        if (MAT::get_nuc(mut_nuc) != 'N') {
+                            (*iter).num_ambiguous++;
+                            MAT::Mutation m(words[0], std::stoi(words[1]), nuc_one_hot(mut_nuc), nuc_one_hot(MAT::get_nuc_id(words[3][0])), 0, nuc_one_hot(MAT::get_nuc_id(words[3][0])));
+                            (*iter).mutations.emplace_back(m);
+                        }
                     }
                 }
             }
         }
-
         fprintf(stderr, "VCF read in %ld msec \n", timer.Stop());
     }
     else
