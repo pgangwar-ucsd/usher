@@ -427,16 +427,11 @@ class Node {
     bool have_masked;
     bool is_leaf() const;
     bool is_root();
-    
-    Node();
+    //Node();
     
     Node(size_t id);
 
     Node(const Node& other, Node* parent,Tree* tree,bool copy_mutation=true);
-
-    Node(const Node& other);
-
-    Node(Node&& other) noexcept;
 
     bool add_mutation(Mutation& mut) {
         return mutations.insert(mut,Mutations_Collection::KEEP_OTHER);

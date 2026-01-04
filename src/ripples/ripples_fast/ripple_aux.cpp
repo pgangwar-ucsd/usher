@@ -4,7 +4,7 @@
 
 void Pruned_Sample::add_mutation(MAT::Mutation mut) {
     // If not reversal to reference allele
-    if ((MAT::get_nuc(mut.get_ref_one_hot()) != MAT::get_nuc(mut.get_mut_one_hot())) &&
+    if ((mut.get_ref_one_hot() != mut.get_mut_one_hot()) &&
             (positions.find(mut.get_position()) == positions.end())) {
         auto iter = std::lower_bound(sample_mutations.begin(),
                                      sample_mutations.end(), mut);

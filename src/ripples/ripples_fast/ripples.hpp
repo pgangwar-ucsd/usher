@@ -32,8 +32,8 @@ struct Ripples_Mapper_Mut {
         : position(mut.get_position()), mut_idx(idx), curr_mut(MAT::get_nuc(mut.get_ref_one_hot())),
           dest_mut(MAT::get_nuc(mut.get_mut_one_hot())) {}
     Ripples_Mapper_Mut(const MAT::Mutation &mut)
-        : position(mut.get_position()), mut_idx(NULL_MUT_IDX), curr_mut(MAT::get_nuc(mut.get_ref_one_hot())),
-          dest_mut(MAT::get_nuc(mut.get_mut_one_hot())) {
+        : position(mut.get_position()), mut_idx(NULL_MUT_IDX), curr_mut(MAT::get_nuc(mut.get_mut_one_hot())),
+          dest_mut(MAT::get_nuc(mut.get_ref_one_hot())) {
         // assert(mut.par_nuc == mut.ref_nuc);
     }
     Ripples_Mapper_Mut(const Ripples_Mapper_Mut &mut, char new_mut)

@@ -20,12 +20,6 @@ bool Mutation_Annotated_Tree::Node::is_root() {
     return (parent == NULL);
 }
 
-Mutation_Annotated_Tree::Node::Node () {
-    have_masked=false;
-    parent = NULL;
-    mutations.clear();
-}
-
 Mutation_Annotated_Tree::Node::Node (size_t id) {
     node_id = id;
     have_masked=false;
@@ -46,29 +40,6 @@ Mutation_Annotated_Tree::Node::Node(const Node &other, Node *parent, Tree *tree,
         children.push_back(new Node(*c, this, tree,copy_mutations));
     }
     tree->register_node_serial(this);
-}
-
-Mutation_Annotated_Tree::Node::Node (const Node& other) {
-    branch_length=other.branch_length;
-    node_id=other.node_id;
-    clade_annotations=other.clade_annotations;
-    parent=other.parent;
-    mutations=other.mutations;
-    have_masked=other.have_masked;
-    children.reserve(other.children.size());
-    for (auto c : other.children) {
-        children.push_back(new Node(*c));
-    }
-}
-
-Node::Node(Node&& other) noexcept {
-    branch_length = std::move(other.branch_length);
-    node_id = std::move(other.node_id);
-    clade_annotations = std::move(other.clade_annotations);
-    parent = std::move(other.parent);
-    mutations = std::move(other.mutations);
-    have_masked = std::move(other.have_masked);
-    children = std::move(other.children);
 }
 
 Mutation_Annotated_Tree::Node* Mutation_Annotated_Tree::Tree::create_node (std::string const& identifier) {

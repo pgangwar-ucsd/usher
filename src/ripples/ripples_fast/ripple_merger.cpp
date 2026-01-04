@@ -255,7 +255,7 @@ static void find_pairs(
 
                 auto donor_node = d.node;
 
-                for (auto anc : T.rsearch(T.get_node(donor_node->node_id), true)) {
+                for (auto anc : T.rsearch(const_cast<Mutation_Annotated_Tree::Node*>(donor_node), true)) {
                     for (auto mut : anc->mutations) {
                         donor.add_mutation(mut);
                     }

@@ -74,17 +74,17 @@ struct ripples_runner {
                 "Creating file %s to write descendants of recombinant nodes\n",
                 desc_filename.c_str());
         FILE *desc_file = fopen(desc_filename.c_str(), "w");
-        fprintf(desc_file, "#node_id\tdescendants\n");
+        fprintf(desc_file, "#node_number\tdescendants\n");
 
         auto recomb_filename = outdir_ + "/recombination.tsv";
         fprintf(stderr, "Creating file %s to write recombination events\n",
                 recomb_filename.c_str());
         FILE *recomb_file = fopen(recomb_filename.c_str(), "w");
         fprintf(recomb_file,
-                "#recomb_node_id\tbreakpoint-1_interval\tbreakpoint-2_"
+                "#recomb_node_number\tbreakpoint-1_interval\tbreakpoint-2_"
                 "interval\tdonor_"
-                "node_id\tdonor_is_sibling\tdonor_parsimony\tacceptor_node_"
-                "id\tacceptor_is_sibling\tacceptor_parsimony\toriginal_"
+                "node_number\tdonor_is_sibling\tdonor_parsimony\tacceptor_node_"
+                "number\tacceptor_is_sibling\tacceptor_parsimony\toriginal_"
                 "parsimony\tmin_"
                 "starting_parsimony\trecomb_parsimony\n");
         fprintf(stderr, "Completed in %ld msec \n\n", timer.Stop());
