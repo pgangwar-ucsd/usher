@@ -11,6 +11,7 @@
 #include <time.h>
 #include <vector>
 
+namespace ripples {
 #define CHECK_MAPPER
 
 struct idx_hash {
@@ -80,3 +81,5 @@ struct Ripple_Finalizer {
 
     void operator()(Ripple_Result_Pack *) const;
 };
+
+}; // namespace ripples

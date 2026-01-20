@@ -82,6 +82,7 @@ struct Ripple_Finalizer {
 */
 
 int main(int argc, char **argv) {
+    using namespace ripples;
     po::variables_map vm = check_options(argc, argv);
     std::string input_mat_filename = vm["input-mat"].as<std::string>();
     std::string outdir = vm["outdir"].as<std::string>();

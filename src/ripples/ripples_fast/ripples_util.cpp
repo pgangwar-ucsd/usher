@@ -1,11 +1,11 @@
 #include "ripples_util.hpp"
 
-inline MAT::Node *get_node_cstr(MAT::Tree &tree, char *name) {
+inline ripples::MAT::Node *get_node_cstr(MAT::Tree &tree, char *name) {
     return tree.get_node(std::string(name));
 }
 
-Ripple_Result_Pack *
-Ripple_Pipeline::operator()(MAT::Node *node_to_consider) const {
+ripples::Ripple_Result_Pack *
+ripples::Ripple_Pipeline::operator()(ripples::MAT::Node *node_to_consider) const {
     fprintf(stderr, "At node id: %s\n", node_to_consider->identifier.c_str());
 
     int orig_parsimony = (int)node_to_consider->mutations.size();
@@ -41,7 +41,7 @@ Ripple_Pipeline::operator()(MAT::Node *node_to_consider) const {
                                    orig_parsimony});
 }
 
-void Ripple_Finalizer::operator()(Ripple_Result_Pack *result) const {
+void ripples::Ripple_Finalizer::operator()(ripples::Ripple_Result_Pack *result) const {
     // print combined pairs
     auto &valid_pairs = result->intervals;
     auto node_to_consider = result->node_to_consider;

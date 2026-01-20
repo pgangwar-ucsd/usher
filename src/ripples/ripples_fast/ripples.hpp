@@ -5,6 +5,8 @@
 #include <signal.h>
 #include <src/mutation_annotated_tree.hpp>
 
+namespace ripples {
+
 namespace po = boost::program_options;
 namespace MAT = Mutation_Annotated_Tree;
 
@@ -16,7 +18,6 @@ struct Mapper_Info {
     bool is_leaf;
 };
 
-namespace MAT = Mutation_Annotated_Tree;
 struct Ripples_Mapper_Mut {
     static const unsigned short NULL_MUT_IDX = -1;
     int position;
@@ -145,3 +146,5 @@ size_t check_parallelizable(const MAT::Node *root,
                             unsigned short &tree_height,
                             std::vector<Mapper_Info> &traversal_track,
                             unsigned short level);
+
+}; // namespace ripples

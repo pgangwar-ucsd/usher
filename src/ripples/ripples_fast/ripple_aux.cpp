@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cstdint>
 
-void Pruned_Sample::add_mutation(MAT::Mutation mut) {
+void ripples::Pruned_Sample::add_mutation(MAT::Mutation mut) {
     // If not reversal to reference allele
     if ((mut.ref_nuc != mut.mut_nuc) &&
             (positions.find(mut.position) == positions.end())) {
@@ -14,14 +14,15 @@ void Pruned_Sample::add_mutation(MAT::Mutation mut) {
     }
     positions.insert(mut.position);
 }
-Pruned_Sample::Pruned_Sample(MAT::Node* name) {
+
+ripples::Pruned_Sample::Pruned_Sample(ripples::MAT::Node* name) {
     sample_name = name;
     sample_mutations.clear();
     positions.clear();
 }
 
-std::vector<Recomb_Interval>
-combine_intervals(std::vector<Recomb_Interval> pair_list) {
+std::vector<ripples::Recomb_Interval>
+ripples::combine_intervals(std::vector<ripples::Recomb_Interval> pair_list) {
     // combine second interval
     std::vector<Recomb_Interval> pairs(pair_list);
     std::sort(pairs.begin(),
@@ -64,7 +65,8 @@ combine_intervals(std::vector<Recomb_Interval> pair_list) {
     }
     return pairs;
 }
-po::variables_map check_options(int argc, char **argv) {
+
+ripples::po::variables_map ripples::check_options(int argc, char **argv) {
     uint32_t num_cores = tbb::this_task_arena::max_concurrency();
     std::string num_threads_message = "Number of threads to use when possible "
                                       "[DEFAULT uses all available cores, " +

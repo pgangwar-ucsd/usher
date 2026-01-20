@@ -1,11 +1,10 @@
 #include "ripples.hpp"
 
-size_t check_parallelizable(const MAT::Node *root,
-                            std::vector<bool> &do_parallel,
-                            size_t parallel_threshold, size_t check_threshold,
-                            unsigned short &tree_height,
-                            std::vector<Mapper_Info> &traversal_track,
-                            unsigned short level) {
+size_t ripples::check_parallelizable(
+    const ripples::MAT::Node *root, std::vector<bool> &do_parallel,
+    size_t parallel_threshold, size_t check_threshold,
+    unsigned short &tree_height,
+    std::vector<ripples::Mapper_Info> &traversal_track, unsigned short level) {
     size_t child_counted_size = 0;
     if ((root->dfs_end_idx - root->dfs_idx) >= check_threshold) {
         child_counted_size++;

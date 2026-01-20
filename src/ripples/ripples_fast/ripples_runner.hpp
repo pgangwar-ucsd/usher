@@ -1,8 +1,6 @@
 #pragma once
 
-#include "ripples.hpp"
 #include "ripples_util.hpp"
-#include "src/usher_graph.hpp"
 #include "tbb/concurrent_unordered_set.h"
 #include <array>
 #include <boost/filesystem.hpp>
@@ -11,6 +9,8 @@
 #include <random>
 #include <time.h>
 #include <vector>
+
+namespace ripples::server {
 
 struct ripples_runner {
     ripples_runner(MAT::Tree &tree, const std::vector<Missing_Sample> &samples,
@@ -167,3 +167,4 @@ struct ripples_runner {
     uint32_t num_desc_;
     std::string outdir_;
 };
+}; // namespace ripples::server

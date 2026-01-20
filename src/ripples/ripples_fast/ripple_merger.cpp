@@ -4,6 +4,9 @@
 #include <cassert>
 #include <stdio.h>
 #include <vector>
+
+namespace ripples {
+
 #ifdef __SSE2__
 #include <emmintrin.h>
 typedef unsigned short __v8hu __attribute__((__vector_size__(16)));
@@ -482,3 +485,4 @@ void ripplrs_merger(const Pruned_Sample &pruned_sample,
 
 
 }
+};
