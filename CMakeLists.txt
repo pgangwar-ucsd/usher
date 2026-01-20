@@ -22,9 +22,9 @@ if ("${VERSION_PATCH}" MATCHES "[0-9]+")
 endif()
 message(STATUS "${usher_VERSION}")
 
-if(NOT APPLE)
-  add_link_options("-Wl,--undefined-version")
-endif()
+#if(NOT APPLE)
+#  add_link_options("-Wl,--undefined-version")
+#endif()
 
 include(FetchContent)
 set(TBB_VERSION "v2022.2.0")
@@ -43,7 +43,8 @@ configure_file(src/version.hpp.in version.hpp)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pipe -g -ggdb3 -Wno-unused-function  -Wno-deprecated-declarations") 
 #-DDEBUG_PARSIMONY_SCORE_CHANGE_CORRECT -fsanitize=address -DCHECK_PAR_MAIN  -DEASY_DEBUG -DSTOP_ON_ERROR  -DDETAILED_MERGER_CHECK -O0
-set(CMAKE_CXX_FLAGS_DEBUG "  -fno-eliminate-unused-debug-symbols -O0")
+set(CMAKE_CXX_FLAGS_DEBUG " -fsanitize=address -fno-eliminate-unused-debug-symbols -O0")
+#set(CMAKE_CXX_FLAGS_DEBUG "  -fno-eliminate-unused-debug-symbols -O0")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-DNDEBUG -O3")
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 ")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -77,7 +78,7 @@ AUX_SOURCE_DIRECTORY(src/matOptimize/apply_move patch_tree)
 AUX_SOURCE_DIRECTORY(src/check_samples_place check_samples_place) 
 file(GLOB MATUTIL_SRCS "src/matUtils/*.cpp" "src/matUtils/*.hpp")
 file(GLOB RIPPLES_SRCS "src/ripples/*.cpp" "src/ripples/*.hpp")
-#file(GLOB RIPPLES_SERVER_SRCS "src/ripples_server/*.cpp" "src/ripples_server/*.hpp")
+file(GLOB RIPPLES_SERVER_SRCS "src/ripples_server/*.cpp" "src/ripples_server/*.hpp")
 file(GLOB USHER_SAMPLED_SRCS "src/usher-sampled/static_tree_mapper/*" "src/usher-sampled/*.cpp" "src/usher-sampled/*.hpp")
 file(GLOB RIPPLES_FAST_SRCS "src/ripples/ripples_fast/*.cpp" "src/ripples/ripples_fast/*.hpp")
 file(GLOB RIPPLES_UTILS_SRCS "src/ripples/util/*.cpp" "src/ripples/util/*.hpp")
@@ -102,6 +103,23 @@ if(DEFINED Protobuf_PATH)
             src/mutation_annotated_tree.cpp
             src/usher_mapper.cpp
             ${MATUTIL_SRCS}
+        )
+        add_executable(ripples_server
+            src/mutation_annotated_tree.cpp
+            src/usher_mapper.cpp
+            src/usher_common.cpp
+            src/ripples/ripples_fast/ripples_runner.cpp
+            src/ripples/ripples_fast/ripples_util.cpp
+            src/ripples/ripples_fast/ripples.cpp
+            src/ripples/ripples_fast/ripple_aux.cpp
+            src/ripples/ripples_fast/ripple_merger.cpp
+            src/ripples/ripples_fast/ripples_mapper.cpp
+            src/matOptimize/mutation_annotated_tree.cpp
+            src/matOptimize/mutation_annotated_tree_node.cpp
+            src/matOptimize/mutation_annotated_tree_load_store.cpp
+            src/matOptimize/Mutation_Collection.cpp
+            src/matOptimize/mutation_annotated_tree_nuc_util.cpp
+            ${RIPPLES_SERVER_SRCS}
         )
 
         add_executable(ripples
@@ -330,6 +348,26 @@ if(DEFINED Protobuf_PATH)
             src/mutation_annotated_tree.cpp
             src/usher_mapper.cpp
             ${RIPPLES_SRCS}
+            ${PROTO_SRCS}
+            ${PROTO_HDRS}
+        )
+
+        add_executable(ripples_server
+            src/mutation_annotated_tree.cpp
+            src/usher_mapper.cpp
+            src/usher_common.cpp
+            src/ripples/ripples_fast/ripples_runner.cpp
+            src/ripples/ripples_fast/ripples_util.cpp
+            src/ripples/ripples_fast/ripples.cpp
+            src/ripples/ripples_fast/ripple_aux.cpp
+            src/ripples/ripples_fast/ripple_merger.cpp
+            src/ripples/ripples_fast/ripples_mapper.cpp
+            src/matOptimize/mutation_annotated_tree.cpp
+            src/matOptimize/mutation_annotated_tree_node.cpp
+            src/matOptimize/mutation_annotated_tree_load_store.cpp
+            src/matOptimize/Mutation_Collection.cpp
+            src/matOptimize/mutation_annotated_tree_nuc_util.cpp
+            ${RIPPLES_SERVER_SRCS}
             ${PROTO_SRCS}
             ${PROTO_HDRS}
         )
@@ -566,8 +604,8 @@ target_include_directories(usher PUBLIC "${PROJECT_BINARY_DIR}")
 TARGET_COMPILE_OPTIONS(matUtils PRIVATE)
 TARGET_LINK_LIBRARIES(matUtils PRIVATE stdc++  ${Boost_LIBRARIES} TBB::tbb ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
 
-#TARGET_COMPILE_OPTIONS(ripples_server PRIVATE -DTBB_SUPPRESS_DEPRECATED_MESSAGES)
-#TARGET_LINK_LIBRARIES(ripples_server PRIVATE stdc++  ${Boost_LIBRARIES} TBB::tbb ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
+#TARGET_COMPILE_OPTIONS(ripples_server PRIVATE)# -DTBB_SUPPRESS_DEPRECATED_MESSAGES)
+TARGET_LINK_LIBRARIES(ripples_server PRIVATE stdc++  ${Boost_LIBRARIES} TBB::tbb TBB::tbbmalloc ${Protobuf_LIBRARIES} ZLIB::ZLIB  ${MPI_CXX_LIBRARIES} ${MPI_CXX_LINK_FLAGS} ${ISAL_LIB})
 
 TARGET_LINK_LIBRARIES(ripplesUtils PRIVATE stdc++  ${Boost_LIBRARIES} TBB::tbb ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
 TARGET_LINK_LIBRARIES(ripplesInit PRIVATE stdc++  ${Boost_LIBRARIES} TBB::tbb ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
