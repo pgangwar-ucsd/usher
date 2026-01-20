@@ -8,6 +8,8 @@
 #include <tbb/parallel_for.h>
 #include <utility>
 #include <vector>
+
+using namespace MatOptimize;
 //find mutated alleles shared by both of the input
 static void intersect_allele(const Mutation_Annotated_Tree::Mutations_Collection& in1, const Mutation_Annotated_Tree::Mutations_Collection& in2, Mutation_Annotated_Tree::Mutations_Collection& out) {
     if (in1.empty()||in2.empty()) {

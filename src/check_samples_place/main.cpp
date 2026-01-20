@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <unordered_set>
 #include <string>
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 #include "src/matOptimize/check_samples.hpp"
 void Sample_Input(const char *name, Original_State_t& ori_state,
                   MAT::Tree &tree);

@@ -5,7 +5,7 @@
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
 #include <vector>
-using namespace Mutation_Annotated_Tree;
+using namespace MatOptimize::Mutation_Annotated_Tree;
 void Mutations_Collection::merge_out(const Mutations_Collection &other,
                                      Mutations_Collection &out,
                                      char keep_self) const {
@@ -165,7 +165,7 @@ Mutations_Collection::iterator Mutations_Collection::find_next(int pos) {
 }
 
 
-int Mutation_Annotated_Tree::Mutations_Collection::count_valid_mutations() const {
+int MatOptimize::Mutation_Annotated_Tree::Mutations_Collection::count_valid_mutations() const {
     int count=0;
     for(const auto & mut:mutations) {
         if (mut.is_valid()) {
@@ -174,8 +174,8 @@ int Mutation_Annotated_Tree::Mutations_Collection::count_valid_mutations() const
     }
     return count;
 }
-void Mutation_Annotated_Tree::Mutations_Collection::remove_invalid() {
-    std::vector<Mutation_Annotated_Tree::Mutation> out;
+void MatOptimize::Mutation_Annotated_Tree::Mutations_Collection::remove_invalid() {
+    std::vector<MatOptimize::Mutation_Annotated_Tree::Mutation> out;
     out.reserve(mutations.size());
     for (const auto& mut : mutations) {
         if (mut.is_valid()) {
@@ -185,7 +185,7 @@ void Mutation_Annotated_Tree::Mutations_Collection::remove_invalid() {
     mutations.swap(out);
 }
 
-bool Mutation_Annotated_Tree::Mutations_Collection::no_valid_mutation()const {
+bool MatOptimize::Mutation_Annotated_Tree::Mutations_Collection::no_valid_mutation()const {
     for(auto& mut:mutations) {
         if (mut.is_valid()) {
             return false;

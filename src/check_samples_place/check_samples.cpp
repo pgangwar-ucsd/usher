@@ -10,7 +10,8 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT =  MatOptimize::Mutation_Annotated_Tree;
+using namespace MatOptimize;
 //add mutation m to parent_mutations, which represent the mutation of a node relative to root,
 //or update major allele if already present
 void ins_mut(Mutation_Set &parent_mutations,const Mutation_Annotated_Tree::Mutation &m,bool is_leaf) {

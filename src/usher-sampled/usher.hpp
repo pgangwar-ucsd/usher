@@ -16,15 +16,15 @@
 #define POSITION_TAG 30
 #define FS_RESULT_TAG 31
 #pragma once
-namespace MAT = Mutation_Annotated_Tree;
 //#define MPI_TRACE
 #ifdef MPI_TRACE
 #define mpi_trace_print(...) fprintf(stderr, __VA_ARGS__ )
 #else
 #define mpi_trace_print(...)
 #endif
+using namespace MatOptimize;
 extern int switch_to_serial_threshold;
-void check_order(MAT::Mutations_Collection& in);
+void check_order(MatOptimize::MAT::Mutations_Collection& in);
 struct To_Place_Sample_Mutation {
     int position;
     uint8_t chrom_idx;
@@ -74,15 +74,15 @@ struct Clade_info {
     Clade_info():valid(false) {}
 };
 void Sample_Input(const char *name, std::vector<Sample_Muts> &sample_mutations,
-                  MAT::Tree &tree,std::vector<mutated_t>&,bool,
+                  MatOptimize::MAT::Tree &tree,std::vector<mutated_t>&,bool,
                   std::vector<std::string>& fields
                   ,const std::unordered_set<std::string>& samples_in_condensed_nodes, std::string duplicate_prefix="");
 #ifndef NDEBUG
-Mutation_Set get_mutations(const MAT::Node *main_tree_node);
-void check_descendant_nuc(const MAT::Node* node);
+Mutation_Set get_mutations(const MatOptimize::MAT::Node *main_tree_node);
+void check_descendant_nuc(const MatOptimize::MAT::Node* node);
 #endif
 
-std::vector<MAT::Node*>read_sample_nodes(std::string samples_file, MAT::Tree &T, FILE *f);
+std::vector<MatOptimize::MAT::Node*>read_sample_nodes(std::string samples_file, MatOptimize::MAT::Tree &T, FILE *f);
 
 struct output_options {
     bool print_uncondensed_tree;
@@ -97,11 +97,11 @@ struct output_options {
     bool suppress_whole_newick;
     std::string anchor_samples_file;
 };
-bool final_output(MAT::Tree& T,const output_options& options,int t_idx,std::vector<Clade_info>& assigned_clades,
+bool final_output(MatOptimize::MAT::Tree& T,const output_options& options,int t_idx,std::vector<Clade_info>& assigned_clades,
                   size_t sample_start_idx,size_t sample_end_idx,std::vector<std::string>& low_confidence_samples,
                   std::vector<mutated_t>& position_wise_out, bool finish_mpi=true);
 void place_sample_leader(std::vector<Sample_Muts> &sample_to_place,
-                         MAT::Tree &main_tree, int batch_size,
+                         MatOptimize::MAT::Tree &main_tree, int batch_size,
                          std::atomic_size_t &curr_idx,
                          int parsimony_increase_threshold,bool dry_run,
                          FILE *placement_stats_file,
@@ -110,18 +110,19 @@ void place_sample_leader(std::vector<Sample_Muts> &sample_to_place,
                          std::vector<Clade_info>& samples_clade,
                          size_t sample_start_idx,std::vector<size_t>* idx_map,
                          bool do_print=false
-                        ) ;
-void fix_parent(Mutation_Annotated_Tree::Tree &tree);
-void convert_mut_type(const std::vector<MAT::Mutation> &in,
+                        );
+
+void fix_parent(MatOptimize::Mutation_Annotated_Tree::Tree &tree);
+void convert_mut_type(const std::vector<MatOptimize::MAT::Mutation> &in,
                       std::vector<To_Place_Sample_Mutation> &out);
-void assign_descendant_muts(MAT::Tree &in);
-void assign_levels(MAT::Node* root);
-void follower_place_sample(MAT::Tree &main_tree,int batch_size,bool dry_run);
-void check_parent(MAT::Node* root,MAT::Tree& tree);
-void find_moved_node_neighbors(int radius,size_t start_idx, MAT::Tree& tree, size_t cur_idx,std::vector<size_t>& node_to_search_idx);
+void assign_descendant_muts(MatOptimize::MAT::Tree &in);
+void assign_levels(MatOptimize::MAT::Node* root);
+void follower_place_sample(MatOptimize::MAT::Tree &main_tree,int batch_size,bool dry_run);
+void check_parent(MatOptimize::MAT::Node* root,MatOptimize::MAT::Tree& tree);
+void find_moved_node_neighbors(int radius,size_t start_idx, MatOptimize::MAT::Tree& tree, size_t cur_idx,std::vector<size_t>& node_to_search_idx);
 int follower_recieve_positions( std::vector<mutated_t>& to_recieve);
-void get_pos_samples_old_tree(MAT::Tree& tree,std::vector<mutated_t>& output);
-void MPI_reassign_states(MAT::Tree& tree,const std::vector<mutated_t>& mutations,int start_position,bool initial=false);
+void get_pos_samples_old_tree(MatOptimize::MAT::Tree& tree,std::vector<mutated_t>& output);
+void MPI_reassign_states(MatOptimize::MAT::Tree& tree,const std::vector<mutated_t>& mutations,int start_position,bool initial=false);
 struct Leader_Thread_Options {
     std::string protobuf_in;
     std::string tree_in;
@@ -147,35 +148,35 @@ struct Leader_Thread_Options {
     std::string diff_file_name;
     std::string reference_file_name;
 };
-int set_descendant_count(MAT::Node* root);
+int set_descendant_count(MatOptimize::MAT::Node* root);
 void discretize_mutations(const std::vector<To_Place_Sample_Mutation> &in,
-                          const MAT::Mutations_Collection &shared_mutations,
-                          MAT::Node *parent_node,
-                          MAT::Mutations_Collection &out);
-bool sort_samples(const Leader_Thread_Options& options,std::vector<Sample_Muts>& samples_to_place, MAT::Tree& tree,size_t sample_start_idx);
+                          const MatOptimize::MAT::Mutations_Collection &shared_mutations,
+                          MatOptimize::MAT::Node *parent_node,
+                          MatOptimize::MAT::Mutations_Collection &out);
+bool sort_samples(const Leader_Thread_Options& options,std::vector<Sample_Muts>& samples_to_place, MatOptimize::MAT::Tree& tree,size_t sample_start_idx);
 void place_sample_multiple_tree(
     std::vector<Sample_Muts> &sample_to_place,
-    std::vector<MAT::Tree>& trees,
+    std::vector<MatOptimize::MAT::Tree>& trees,
     FILE *placement_stats_file, int max_trees);
 void distribute_positions(std::vector<mutated_t>& output);
-void reassign_state_local(MAT::Tree& tree,const std::vector<mutated_t>& mutations,bool initial=false);
-void remove_absent_leaves(MAT::Tree& tree,std::unordered_set<std::string>& present);
-void print_annotation(const MAT::Tree &T, const output_options &options,
+void reassign_state_local(MatOptimize::MAT::Tree& tree,const std::vector<mutated_t>& mutations,bool initial=false);
+void remove_absent_leaves(MatOptimize::MAT::Tree& tree,std::unordered_set<std::string>& present);
+void print_annotation(const MatOptimize::MAT::Tree &T, const output_options &options,
                       const std::vector<Clade_info> &assigned_clades,
                       size_t sample_start_idx, size_t sample_end_idx,
                       size_t num_annotations);
-void min_back_reassign_state_local(MAT::Tree& tree,const std::vector<mutated_t>& mutations);
-void MPI_min_back_reassign_states(MAT::Tree &tree,const std::vector<mutated_t> &mutations,int start_position);
-int count_back_mutation(const MAT::Tree& tree);
+void min_back_reassign_state_local(MatOptimize::MAT::Tree& tree,const std::vector<mutated_t>& mutations);
+void MPI_min_back_reassign_states(MatOptimize::MAT::Tree &tree,const std::vector<mutated_t> &mutations,int start_position);
+int count_back_mutation(const MatOptimize::MAT::Tree& tree);
 void place_sample_sequential(
-    std::vector<Sample_Muts> &sample_to_place, MAT::Tree &main_tree,
+    std::vector<Sample_Muts> &sample_to_place, MatOptimize::MAT::Tree &main_tree,
     bool dry_run, FILE *placement_stats_file, int max_parsimony,
     size_t max_uncertainty, std::vector<std::string> &low_confidence_samples,
     std::vector<Clade_info> &samples_clade, size_t sample_start_idx,
     bool do_print, FILE *printer_out);
-void clean_up_leaf(std::vector<MAT::Node*>& dfs);
-int prep_tree(MAT::Tree &tree);
+void clean_up_leaf(std::vector<MatOptimize::MAT::Node*>& dfs);
+int prep_tree(MatOptimize::MAT::Tree &tree);
 void load_diff_for_usher(
     const char *input_path,std::vector<Sample_Muts>& all_samples,
-    std::vector<mutated_t>& position_wise_out, MAT::Tree &tree,
+    std::vector<mutated_t>& position_wise_out, MatOptimize::MAT::Tree &tree,
     const std::string& fasta_fname,std::vector<std::string> & samples);

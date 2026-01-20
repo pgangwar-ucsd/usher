@@ -31,7 +31,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 #define ZLIB_BUFSIZ 0x10000
 size_t read_size;
 size_t alloc_size;

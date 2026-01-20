@@ -18,6 +18,7 @@
 #include "tbb/concurrent_unordered_set.h"
 #include "tbb/concurrent_unordered_map.h"
 
+
 #if SAVE_PROFILE == 1
 #  define TIMEIT() InstrumentationTimer timer##__LINE__(__PRETTY_FUNCTION__);
 #else
@@ -88,6 +89,7 @@ inline nuc_2bit::operator nuc_one_hot() const {
     return two_bit_to_one_hot(nuc);
 }
 
+namespace MatOptimize {
 namespace Mutation_Annotated_Tree {
 class Tree;
 class Node;
@@ -692,7 +694,11 @@ get_subtree_root(const Mutation_Annotated_Tree::Tree &tree,
                                      bool keep_clade_annotations=false) ;
 void write_newick_string_node (const Mutation_Annotated_Tree::Tree& template_tree,std::iostream::basic_ostream& ss, Mutation_Annotated_Tree::Node* node,
         bool print_internal, bool print_branch_len, bool retain_original_branch_len=false, bool uncondense_leaves=false);
-}
-bool check_grand_parent(const Mutation_Annotated_Tree::Node* node,const Mutation_Annotated_Tree::Node* grand_parent);
-nuc_one_hot get_parent_state(Mutation_Annotated_Tree::Node* ancestor,int position);
+};
+
+namespace MAT = Mutation_Annotated_Tree;
+};
+
+bool check_grand_parent(const MatOptimize::Mutation_Annotated_Tree::Node* node,const MatOptimize::Mutation_Annotated_Tree::Node* grand_parent);
+nuc_one_hot get_parent_state(MatOptimize::Mutation_Annotated_Tree::Node* ancestor,int position);
 #endif

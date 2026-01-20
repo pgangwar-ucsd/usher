@@ -14,7 +14,7 @@
 #include <random>
 #include <utility>
 #include <vector>
-namespace MAT=Mutation_Annotated_Tree;
+namespace MAT=MatOptimize::Mutation_Annotated_Tree;
 //add a root above current root, so nodes can move above the current node
 void add_root(MAT::Tree *tree) {
     MAT::Node *old_root = tree->root;

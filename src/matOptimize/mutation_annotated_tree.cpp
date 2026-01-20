@@ -27,7 +27,8 @@
 // Uses one-hot encoding if base is unambiguous
 //void check_leaves(const Mutation_Annotated_Tree::Tree& T);
 // A:1,C:2,G:4,T:8
-using Mutation_Annotated_Tree::Node;
+using MatOptimize::Mutation_Annotated_Tree::Node;
+using namespace MatOptimize;
 tbb::concurrent_unordered_map<std::string, uint8_t>  Mutation_Annotated_Tree::Mutation::chromosome_map;
 std::vector<std::string>  Mutation_Annotated_Tree::Mutation::chromosomes;
 std::mutex Mutation_Annotated_Tree::Mutation::ref_lock;
@@ -577,7 +578,8 @@ static void gather_nodes(Node* start_node,Node* exclude_node,Least_N& out,int di
         gather_nodes(child, exclude_node, out,dist+child->mutations.size());
     }
 }
-static int set_num_leaves_as_bfs_idx(Node* root){
+
+static int set_num_leaves_as_bfs_idx(MatOptimize::MAT::Node* root){
     int child_cnt=0;
     if(root->is_leaf()){
         child_cnt=1;
@@ -588,6 +590,7 @@ static int set_num_leaves_as_bfs_idx(Node* root){
     root->bfs_index=child_cnt;
     return child_cnt;
 }
+
 void Mutation_Annotated_Tree::get_random_sample_subtrees (const Mutation_Annotated_Tree::Tree& T, std::vector<Node*> samples, std::string outdir, size_t subtree_size, size_t tree_idx, bool use_tree_idx, bool retain_original_branch_len, std::vector<Node*> anchor_samples) {
     fprintf(stderr, "Computing subtrees for %ld samples. \n\n", samples.size());
     std::string preid = "/";

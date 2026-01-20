@@ -10,7 +10,7 @@
 #include "../stack_allocator.hpp"
 typedef std::vector<std::array<std::vector<unsigned int>, 4>> mutated_node_dfs_idx_t;
 extern mutated_node_dfs_idx_t mutated_node_dfs_idx;
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 //Class for recording change in major allele set
 class Mutation_Count_Change {
     int position;

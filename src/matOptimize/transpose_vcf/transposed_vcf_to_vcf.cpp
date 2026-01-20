@@ -21,7 +21,7 @@
 #include <zlib.h>
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options.hpp>
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 std::string chrom;
 std::string ref;
 struct Pos_Mut {
