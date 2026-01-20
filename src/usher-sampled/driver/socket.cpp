@@ -1,4 +1,5 @@
-#include "src/matOptimize/mutation_annotated_tree.hpp"
+#include "src/mat_proxy.hpp"
+#include "src/ripples/ripples_fast/ripples_runner.hpp"
 #include "src/usher-sampled/usher.hpp"
 #include <atomic>
 #include <boost/filesystem/operations.hpp>
@@ -38,6 +39,7 @@
 #include <vector>
 #include <sys/poll.h>
 #include <iostream>
+
 #define BOOST_STACKTRACE_USE_ADDR2LINE
 #include <boost/stacktrace.hpp>
 static void print_stack_trace(int ){
@@ -49,8 +51,8 @@ std::mutex tree_loading_mutex;
 struct tree_info {
     boost::filesystem::path canonical_path;
     std::time_t last_modify_time;
-    MAT::Tree tree;
-    MAT::Tree expanded_tree;
+    MatOptimize::MAT::Tree tree;
+    MatOptimize::MAT::Tree expanded_tree;
     std::unordered_set<std::string> condensed_nodes;
     std::string path;
     int switch_threshold;
@@ -78,7 +80,7 @@ int this_rank = 0;
 unsigned int num_threads;
 std::atomic_bool interrupted(false);
 bool prep_single_tree(std::string path, std::shared_ptr<tree_info> &out) {
-    if (!MAT::load_mutation_annotated_tree(path, out->tree)) {
+    if (!MatOptimize::MAT::load_mutation_annotated_tree(path, out->tree)) {
         return false;
     }
     fix_parent(out->tree);
@@ -402,9 +404,9 @@ static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
     }
     tbb::global_control global_limit(tbb::global_control::max_allowed_parallelism, num_threads);
     if (existing_samples != "") {
-        MAT::Tree &tree = iter->second->expanded_tree;
-        std::vector<MAT::Node *> nodes_to_extract = read_sample_nodes(existing_samples, tree, f);
-        std::vector<MAT::Node *> anchor_sample_nodes;
+        MatOptimize::MAT::Tree &tree = iter->second->expanded_tree;
+        std::vector<MatOptimize::MAT::Node *> nodes_to_extract = read_sample_nodes(existing_samples, tree, f);
+        std::vector<MatOptimize::MAT::Node *> anchor_sample_nodes;
         if (options.out_options.anchor_samples_file != "") {
             anchor_sample_nodes = read_sample_nodes(options.out_options.anchor_samples_file, tree, f);
         }
@@ -433,20 +435,20 @@ static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
                     "Computing the single subtree for added samples with %zu "
                     "random leaves. \n\n",
                     options.out_options.print_subtrees_single);
-            MAT::get_random_single_subtree(
+                MatOptimize::MAT::get_random_single_subtree(
                 tree, nodes_to_extract, options.out_options.outdir, options.out_options.print_subtrees_single,
                 0, false, options.out_options.retain_original_branch_len, anchor_sample_nodes);
         }
         // check_leaves(T);
         if ((options.out_options.print_subtrees_size > 1)) {
             fprintf(stderr, "Computing subtrees for added samples. \n\n");
-            MAT::get_random_sample_subtrees(
+            MatOptimize::MAT::get_random_sample_subtrees(
                 tree, nodes_to_extract, options.out_options.outdir, options.out_options.print_subtrees_size, 0,
                 false, options.out_options.retain_original_branch_len, anchor_sample_nodes);
         }
 
     } else {
-        MAT::Tree &tree = iter->second->tree;
+        MatOptimize::MAT::Tree &tree = iter->second->tree;
         std::vector<Sample_Muts> samples_to_place;
         std::vector<mutated_t> position_wise_out;
         std::vector<mutated_t> position_wise_out_dup;
@@ -499,7 +501,20 @@ static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
         fputc('\n', f);
 
         // RIPPLES SERVER INTEGRATION
-        //MAT::Tree T_new = tree.copy_tree();
+        ripples::server::MATProxy proxy_tree(tree);
+        auto tree = proxy_tree.clone();
+        if (tree) {
+            //TODO: Set ripples server parameters
+            [[maybe_unused]] uint32_t branch_len = 3;
+            [[maybe_unused]] std::string outdir = ".";
+            [[maybe_unused]] uint32_t num_desc = 10;
+            // TODO: pass tree.value(), and the rest of parameters to ripples_runner
+            // ripples_runner(MAT::Tree &tree, const std::vector<Missing_Sample> &samples,
+            // uint32_t num_threads, uint32_t branch_len, uint32_t num_desc,
+            // const std::string &outdir)
+            // Then run ripples-fast:
+            // runner();
+        }
 
     }
     fputc(4, f);
