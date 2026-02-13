@@ -1,6 +1,6 @@
 #include "ripples_util.hpp"
 
-inline ripples::MAT::Node *get_node_cstr(MAT::Tree &tree, char *name) {
+inline ripples::MAT::Node *get_node_cstr(ripples::MAT::Tree &tree, char *name) {
     return tree.get_node(std::string(name));
 }
 

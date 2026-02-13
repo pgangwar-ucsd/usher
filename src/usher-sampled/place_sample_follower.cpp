@@ -9,7 +9,7 @@
 #include <mpi.h>
 #include <tuple>
 #include "src/usher-sampled/static_tree_mapper/index.hpp"
-void check_parent(MAT::Node* root,MAT::Tree& tree) {
+void check_parent(MatOptimize::MAT::Node* root,MatOptimize::MAT::Tree& tree) {
     if (root!=tree.get_node(root->node_id)) {
         fprintf(stderr, "dict mismatch at node %zu\n",root->node_id);
         raise(SIGTRAP);
@@ -23,7 +23,7 @@ void check_parent(MAT::Node* root,MAT::Tree& tree) {
 }
 
 static std::string
-serialize_move(move_type *in, MAT::Tree& tree) {
+serialize_move(move_type *in, MatOptimize::MAT::Tree& tree) {
     Mutation_Detailed::search_result result;
     result.set_sample_id(std::get<1>(*in)->sample_idx);
     result.mutable_place_targets()->Reserve(std::get<0>(*in).size());
@@ -53,10 +53,10 @@ serialize_move(move_type *in, MAT::Tree& tree) {
 }
 
 
-void check_order_node(MAT::Node* node) {
+void check_order_node(MatOptimize::MAT::Node* node) {
     int prev_pos=-1;
     for (const auto& mut : node->mutations) {
-        if (mut.get_position()>=(int)MAT::Mutation::refs.size()) {
+        if (mut.get_position()>=(int)MatOptimize::MAT::Mutation::refs.size()) {
             fprintf(stderr, "%zu: placement_check strange size\n",node->node_id);
             raise(SIGTRAP);
         }
@@ -67,11 +67,11 @@ void check_order_node(MAT::Node* node) {
         prev_pos=mut.get_position();
     }
 }
-void check_order(MAT::Mutations_Collection& in) {
+void check_order(MatOptimize::MAT::Mutations_Collection& in) {
     int prev_pos=-1;
     for (const auto& mut : in) {
         if (mut.get_position()<=prev_pos) {
-            if (mut.get_position()>=(int)MAT::Mutation::refs.size()) {
+            if (mut.get_position()>=(int)MatOptimize::MAT::Mutation::refs.size()) {
                 fprintf(stderr, "placement_check strange size\n");
                 raise(SIGTRAP);
             }
@@ -81,7 +81,7 @@ void check_order(MAT::Mutations_Collection& in) {
         prev_pos=mut.get_position();
     }
 }
-static void check_parent_match(MAT::Node* node,MAT::Tree& tree,char* name) {
+static void check_parent_match(MatOptimize::MAT::Node* node,MatOptimize::MAT::Tree& tree,char* name) {
     auto split_node_par_child=node->parent->children;
     if (std::find(split_node_par_child.begin(),split_node_par_child.end(),node)==split_node_par_child.end()) {
         fprintf(stderr, "%s parent mismatch\n",name);
@@ -92,8 +92,8 @@ static void check_parent_match(MAT::Node* node,MAT::Tree& tree,char* name) {
         raise(SIGTRAP);
     }
 }
-static void recv_and_place_follower(MAT::Tree &tree,
-                                    std::vector<MAT::Node *> &deleted_nodes,bool dry_run) {
+static void recv_and_place_follower(MatOptimize::MAT::Tree &tree,
+                                    std::vector<MatOptimize::MAT::Node *> &deleted_nodes,bool dry_run) {
     if (dry_run) {
         return;
     }
@@ -111,9 +111,9 @@ static void recv_and_place_follower(MAT::Tree &tree,
         Mutation_Detailed::placed_target parsed_target;
         parsed_target.ParseFromArray(buffer, bcast_size);
         //fprintf(stderr,"Recieved move target :%zu, split %zu, sample: %zu\n",parsed_target.target_node_id(),parsed_target.split_node_id(),parsed_target.sample_id());
-        MAT::Mutations_Collection sample_mutations;
-        MAT::Mutations_Collection shared_mutations;
-        MAT::Mutations_Collection splitted_mutations;
+        MatOptimize::MAT::Mutations_Collection sample_mutations;
+        MatOptimize::MAT::Mutations_Collection shared_mutations;
+        MatOptimize::MAT::Mutations_Collection splitted_mutations;
         load_mutations(parsed_target.sample_mutation_positions(),
                        parsed_target.sample_mutation_other_fields(),
                        sample_mutations.mutations);
@@ -197,15 +197,15 @@ static Sample_Muts* fetch_sample_from_leader(bool& is_first) {
     delete[] buffer;
     return out;
 }
-void follower_place_sample(MAT::Tree &main_tree,int batch_size,bool dry_run) {
+void follower_place_sample(MatOptimize::MAT::Tree &main_tree,int batch_size,bool dry_run) {
     Traversal_Info traversal_info;
-    std::vector<MAT::Node *> dfs_ordered_nodes;
+    std::vector<MatOptimize::MAT::Node *> dfs_ordered_nodes;
     if (dry_run) {
         traversal_info = build_idx(main_tree);
         dfs_ordered_nodes = main_tree.depth_first_expansion();
     }
     check_parent(main_tree.root, main_tree);
-    std::vector<MAT::Node *> deleted_nodes;
+    std::vector<MatOptimize::MAT::Node *> deleted_nodes;
     bool is_first=true;
     std::thread tree_update_thread(recv_and_place_follower,std::ref(main_tree),std::ref(deleted_nodes),dry_run);
     {

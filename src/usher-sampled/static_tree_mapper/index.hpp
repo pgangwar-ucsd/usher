@@ -14,14 +14,14 @@ typedef std::vector<std::array<std::vector<index_ele>, 4>> index_tree;
 struct traversal_track_elem {
     int mutation_size;
     int dfs_end_idx;
-    const Mutation_Annotated_Tree::Mutation* mutation_start;
+    const MatOptimize::Mutation_Annotated_Tree::Mutation* mutation_start;
 };
 struct Traversal_Info {
     index_tree indexes;
     std::vector<traversal_track_elem> traversal_track;
     int tree_height;
 };
-Traversal_Info build_idx(MAT::Tree& tree);
+Traversal_Info build_idx(MatOptimize::MAT::Tree& tree);
 move_type* place_sample_fixed_idx(const Traversal_Info &in,
                                   Sample_Muts* to_search,
-                                  const std::vector<MAT::Node*>& dfs_ordered_nodes);
+                                  const std::vector<MatOptimize::MAT::Node*>& dfs_ordered_nodes);
