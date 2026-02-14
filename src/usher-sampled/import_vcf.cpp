@@ -498,7 +498,6 @@ static void process(infile_t &fd, std::vector<Sample_Muts> &sample_mutations,
     read_size = first_approx_size * single_line_size;
     alloc_size = (first_approx_size + 2) * single_line_size;
     tbb::concurrent_bounded_queue<std::pair<char *, uint8_t *>> queue;
-    queue.set_capacity(10);
     tbb::flow::input_node<line_start_later> line(input_graph, line_align(queue));
     tbb::flow::make_edge(line, parser);
     line.activate();

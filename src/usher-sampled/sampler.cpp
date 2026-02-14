@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 #include <taskflow/taskflow.hpp>
+#include <memory>
 
 namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 
@@ -51,53 +52,45 @@ struct Assign_Descendant_Possible_Muts_Cont {
     }
 };
 
-struct Assign_Descendant_Possible_Muts {
-    tf::Taskflow& taskflow;
-    MAT::Node *root;
-    std::unordered_map<int, uint8_t> &output;
-    Assign_Descendant_Possible_Muts(tf::Taskflow& t, MAT::Node *root,
-                                    std::unordered_map<int, uint8_t> &output)
-        : taskflow{t}, root(root), output(output) {}
-    void execute() const {
-        Assign_Descendant_Possible_Muts_Cont cont(output, root->children.size(),
-                                                  root);
-        std::vector<Assign_Descendant_Possible_Muts> children_tasks;
-        children_tasks.reserve(root->children.size());
-        for (size_t idx = 0; idx < root->children.size(); idx++) {
-            auto this_child = root->children[idx];
-            if (this_child->children.empty()) {
-                cont.children_out[idx].reserve(this_child->mutations.size());
-                for (auto &mut : this_child->mutations) {
-                    mut.set_descendant_mut(mut.get_mut_one_hot());
-                    cont.children_out[idx].emplace(mut.get_position(),
-                                                   mut.get_mut_one_hot());
-                }
-            } else {
-                children_tasks.emplace_back(taskflow,
-                                            this_child, cont.children_out[idx]);
-            }
-        }
-        if (children_tasks.empty()) {
-            cont.execute();
-        } else {
-          taskflow.emplace([&children_tasks](tf::Subflow& subflow){
-            for (auto&& child_task : std::move(children_tasks)) {
-                subflow.emplace([child_task = std::move(child_task)] {
-                    child_task.execute();
-                });
-            }
+void build_task_graph(MAT::Node* node, std::unordered_map<int, uint8_t>& output, tf::Subflow& subflow) {
+    // 1. Allocate Context on the HEAP (Safety Fix)
+    auto cont_ptr = std::make_shared<Assign_Descendant_Possible_Muts_Cont>(output, node->children.size(), node);
+    
+    // 2. Create Continuation Task
+    tf::Task continuation = subflow.emplace([cont_ptr]() {
+        cont_ptr->execute();
+    });
 
-          });
+    // 3. Spawn Children
+    for (size_t i = 0; i < node->children.size(); ++i) {
+        auto child = node->children[i];
+
+        if (child->children.empty()) {
+            // Leaf optimization (Serial execution)
+            cont_ptr->children_out[i].reserve(child->mutations.size());
+            for (auto &mut : child->mutations) {
+                mut.set_descendant_mut(mut.get_mut_one_hot());
+                cont_ptr->children_out[i].emplace(mut.get_position(), mut.get_mut_one_hot());
+            }
+        } else {
+            // Recursion: Create a subflow for the child
+            // Capture 'cont_ptr' and 'i' by value to be safe
+            tf::Task child_task = subflow.emplace([child, cont_ptr, i](tf::Subflow& sf) {
+                build_task_graph(child, cont_ptr->children_out[i], sf);
+            });
+
+            // The continuation (execute) must wait for the child to finish
+            child_task.precede(continuation);
         }
     }
-};
+}
 
 void assign_descendant_muts(MAT::Tree &in) {
     std::unordered_map<int, uint8_t> ignore;
     tf::Executor executor;
     tf::Taskflow taskflow;
-    taskflow.emplace([&] {
-      Assign_Descendant_Possible_Muts(taskflow, in.root, ignore).execute();
+    taskflow.emplace([&](tf::Subflow& subflow) {
+      build_task_graph(in.root, ignore, subflow);
     });
     executor.run(taskflow).wait(); 
 }
