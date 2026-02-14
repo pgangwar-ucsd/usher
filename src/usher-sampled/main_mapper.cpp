@@ -378,7 +378,7 @@ struct Main_Tree_Searcher {
 #ifdef DETAILED_MERGER_CHECK
     Mutation_Set &sample_mutations;
 #endif
-    Main_Tree_Searcher(int curr_lower_bound, const MAT::Node *node,
+    Main_Tree_Searcher(int curr_lower_bound, const MatOptimize::MAT::Node *node,
                        Output<Main_Tree_Target> &output
 #ifdef DETAILED_MERGER_CHECK
                        ,
