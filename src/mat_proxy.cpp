@@ -1,38 +1,46 @@
-#include "mat_proxy.h"
+#include "mat_proxy.hpp"
 
-ripples::server::MAT::Node *
-copy_node(ripples::server::MAT::Tree &tree, ripples::server::MAT::Node *parent,
-          ripples::server::OptimizeMAT::Node *node) {
-    // if (all_nodes.find(identifier) != all_nodes.end()) {
-    // fprintf(stderr, "Error: %s already in the tree!\n",
-    // identifier.c_str());
-    // exit(1);
-    //}
-    const std::string identifier = tree.new_internal_node_id();
-    auto bl = static_cast<float>(node->branch_length);
-
-    auto *new_node = new MAT::Node(identifier, parent, bl);
-    size_t num_annotations = node->clade_annotations.size();
-    new_node->clade_annotations.reserve(num_annotations);
-    new_node->clade_annotations(node->clade_annotations);
-    new_node->level = node->level;
-    new_node->dfs_idx = node->dfs_index;
-    new_node->dfs_end_idx = node->dfs_end_index;
-
-    size_t num_mutations = node->mutations.mutations.size();
-    new_node->mutations.reserve(num_mutations);
-    for (const auto &mut : node->mutations.mutations) {
-        new_node->mutations.emplace_back(copy_mutation(mut));
+std::optional<std::vector<std::string>>
+ripples::server::get_missing_sample_names(
+    const MatOptimize::MAT::Tree &tree,
+    const std::vector<Sample_Muts> &missing_samples) {
+    std::vector<std::string> missing_sample_names;
+    missing_sample_names.reserve(missing_samples.size());
+    for (const auto &sample : missing_samples) {
+        auto name = missing_sample_names.emplace_back(
+            tree.get_node_name(sample.sample_idx));
+        // TODO: How do we want to handle errors
+        if (name.empty()) {
+            return std::nullopt;
+        }
     }
-    return new_node;
+    return missing_sample_names;
 }
 
-// TODO: Needs testing
-// NOTE: Chromosome field left as empty string.
-ripples::server::MAT::Mutation
-copy_mutation(ripples::server::OptimizeMAT::Mutation &mutation) {
+std::optional<std::vector<Missing_Sample>>
+ripples::server::collect_missing_samples(
+    const ripples::server::MAT::Tree &tree,
+    const std::vector<std::string> &missing_sample_names) {
+
+    std::vector<Missing_Sample> missing_samples;
+    for (const auto &name : missing_sample_names) {
+        auto &sample = missing_samples.emplace_back(Missing_Sample(name));
+        const auto *node = tree.get_node(name);
+        sample.mutations = node->mutations;
+    }
+    // IMPORTANT NOTE:
+    // Ignoring the following fields in Missing_Sample for now:
+    // - best_clade_assignment
+    // - clade_assignments
+    // - num_ambiguous is set to 0 by Missing_Sample constructor
+    return missing_samples;
+}
+
+ripples::server::MAT::Mutation ripples::server::MATCopyHelper::copy_mutation(
+    const ripples::server::OptimizeMAT::Mutation &mutation) const {
+    // NOTE: Chromosome field left as empty string.
     MAT::Mutation m;
-    m.position = mutation.position;
+    m.position = mutation.get_position();
     // MatOptimize mutation has conversion operators to unpack uint8_t
     m.ref_nuc = mutation.get_ref_one_hot();
     m.par_nuc = mutation.get_par_one_hot();
@@ -40,45 +48,13 @@ copy_mutation(ripples::server::OptimizeMAT::Mutation &mutation) {
     return m;
 }
 
-static ripples::server::MATProxy::OptionalTree
-ripples::server::copy_matoptimize_to_mat(const OptimizeMAT::Tree &tree) {
-    MAT::Tree tree;
-    if (tree_.all_nodes.size() == 0) {
-        // TODO: warn empty tree, error?
-        return std::nullopt;
-        // return tree;
-    }
-    // all_nodes, including leaf nodes, stored in dfs order
-    auto *root = tree_.all_nodes[0];
-    if (!root || root != tree_.root) {
-        return std::nullopt;
-    }
-    auto *new_root = copy_node(tree, nullptr, root);
-    MAT::Node *parent = new_root;
-
-    struct NodeParentPair {
-        OptimizeMAT::Node *curr_node;
-        MAT::Node *parent_node;
-    };
-
-    std::stack<NodeParentPair> dfs_order;
-    while (!dfs_order.empty()) {
-        auto [curr_node, parent_node] = dfs_order.top();
-        dfs_order.pop();
-
-        auto *new_node = copy_node(tree, parent_node, curr_node);
-        // If new node has parent (not root), add node to parent's children
-        if (parent_node) {
-            parent->children.push_back(new_node);
-        }
-        // TODO: Make sure root is set.
-        tree.all_nodes[new_node->identifier] = new_node;
-        for (const auto &child : curr_node->children) {
-            dfs_order.push({child, curr_node});
-        }
-    }
-    return std::make_optional<MAT::Tree>(tree);
+/*
+ripples::server::MAT::Node *ripples::server::MATCopyHelper::copy_node(
+    const std::string &identifier, MAT::Node *parent,
+    OptimizeMAT::Node *node_to_copy) const {
+    return nullptr;
 }
+*/
 
-// TODO: implement copy_mat_to_matoptimize
+
 

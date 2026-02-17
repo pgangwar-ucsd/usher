@@ -28,16 +28,15 @@
 //void check_leaves(const Mutation_Annotated_Tree::Tree& T);
 // A:1,C:2,G:4,T:8
 using MatOptimize::Mutation_Annotated_Tree::Node;
-using namespace MatOptimize;
-tbb::concurrent_unordered_map<std::string, uint8_t>  Mutation_Annotated_Tree::Mutation::chromosome_map;
-std::vector<std::string>  Mutation_Annotated_Tree::Mutation::chromosomes;
-std::mutex Mutation_Annotated_Tree::Mutation::ref_lock;
-std::vector<nuc_one_hot> Mutation_Annotated_Tree::Mutation::refs;
+tbb::concurrent_unordered_map<std::string, uint8_t>  MatOptimize::Mutation_Annotated_Tree::Mutation::chromosome_map;
+std::vector<std::string>  MatOptimize::Mutation_Annotated_Tree::Mutation::chromosomes;
+std::mutex MatOptimize::Mutation_Annotated_Tree::Mutation::ref_lock;
+std::vector<nuc_one_hot> MatOptimize::Mutation_Annotated_Tree::Mutation::refs;
 
 
 
 /* === Tree === */
-std::vector<Mutation_Annotated_Tree::Node*> Mutation_Annotated_Tree::Tree::breadth_first_expansion(std::string nid) {
+std::vector<MatOptimize::Mutation_Annotated_Tree::Node*> MatOptimize::Mutation_Annotated_Tree::Tree::breadth_first_expansion(std::string nid) {
     std::vector<Node*> traversal;
     Node* node;
     if (nid == "") {
@@ -64,7 +63,7 @@ std::vector<Mutation_Annotated_Tree::Node*> Mutation_Annotated_Tree::Tree::bread
     return traversal;
 }
 
-static void depth_first_expansion_helper(Mutation_Annotated_Tree::Node* node, std::vector<Mutation_Annotated_Tree::Node*>& vec, size_t& index,size_t level) {
+static void depth_first_expansion_helper(MatOptimize::Mutation_Annotated_Tree::Node* node, std::vector<MatOptimize::Mutation_Annotated_Tree::Node*>& vec, size_t& index,size_t level) {
 #ifdef DETAIL_DEBUG_NO_LOOP
     assert(std::find(vec.begin(),vec.end(),node)==vec.end());
 #endif
@@ -79,7 +78,7 @@ static void depth_first_expansion_helper(Mutation_Annotated_Tree::Node* node, st
     node->dfs_end_index=index-1;
 }
 
-std::vector<Mutation_Annotated_Tree::Node*> depth_first_expansion_no_tree(Mutation_Annotated_Tree::Node* node)  {
+std::vector<MatOptimize::Mutation_Annotated_Tree::Node*> depth_first_expansion_no_tree(MatOptimize::Mutation_Annotated_Tree::Node* node)  {
     std::vector<Node*> traversal;
     size_t index=0;
     if (node == NULL) {
@@ -88,7 +87,7 @@ std::vector<Mutation_Annotated_Tree::Node*> depth_first_expansion_no_tree(Mutati
     depth_first_expansion_helper(node, traversal,index,0);
     return traversal;
 }
-std::vector<Mutation_Annotated_Tree::Node*> Mutation_Annotated_Tree::Tree::depth_first_expansion(Mutation_Annotated_Tree::Node* node) const {
+std::vector<MatOptimize::Mutation_Annotated_Tree::Node*> MatOptimize::Mutation_Annotated_Tree::Tree::depth_first_expansion(MatOptimize::Mutation_Annotated_Tree::Node* node) const {
     TIMEIT();
     if (node == NULL) {
         node = root;
@@ -96,7 +95,7 @@ std::vector<Mutation_Annotated_Tree::Node*> Mutation_Annotated_Tree::Tree::depth
     return depth_first_expansion_no_tree(node);
 }
 
-size_t Mutation_Annotated_Tree::Tree::get_parsimony_score() {
+size_t MatOptimize::Mutation_Annotated_Tree::Tree::get_parsimony_score() {
     size_t score = 0;
     auto dfs = depth_first_expansion();
     for (auto n: dfs) {
@@ -113,11 +112,11 @@ static size_t level_helper(const Node* node) {
     }
     return level+1;
 }
-size_t Mutation_Annotated_Tree::Tree::get_max_level() {
+size_t MatOptimize::Mutation_Annotated_Tree::Tree::get_max_level() {
     max_level=level_helper(root);
     return max_level;
 }
-void Mutation_Annotated_Tree::Tree::check_leaves() {
+void MatOptimize::Mutation_Annotated_Tree::Tree::check_leaves() {
     fprintf(stderr,"===================Node ID so far %zu ===================",node_idx);
     for (const auto node: get_leaves()) {
         auto iter=node_names.find(node->node_id);
@@ -127,7 +126,7 @@ void Mutation_Annotated_Tree::Tree::check_leaves() {
         }
     }
 }
-void Mutation_Annotated_Tree::Tree::uncondense_leaves() {
+void MatOptimize::Mutation_Annotated_Tree::Tree::uncondense_leaves() {
     for (auto cn = condensed_nodes.begin(); cn != condensed_nodes.end(); cn++) {
 
         auto n = all_nodes[cn->first];
@@ -153,7 +152,7 @@ void Node::delete_this() {
     }
     delete this;
 }
-void Mutation_Annotated_Tree::Tree::delete_nodes() {
+void MatOptimize::Mutation_Annotated_Tree::Tree::delete_nodes() {
     if (!root) {
         return;
     }
@@ -169,7 +168,7 @@ static void get_leaves_helper(const Node* root, std::vector<Node*>& out) {
         }
     }
 }
-std::vector<Node*> Mutation_Annotated_Tree::Tree::get_leaves(Node* root) const {
+std::vector<Node*> MatOptimize::Mutation_Annotated_Tree::Tree::get_leaves(Node* root) const {
     std::vector<Node*> out;
     if (root==nullptr) {
         root=this->root;
@@ -181,7 +180,7 @@ std::vector<Node*> Mutation_Annotated_Tree::Tree::get_leaves(Node* root) const {
     get_leaves_helper(root, out);
     return out;
 }
-Mutation_Annotated_Tree::Tree Mutation_Annotated_Tree::Tree::copy_tree() {
+MatOptimize::Mutation_Annotated_Tree::Tree MatOptimize::Mutation_Annotated_Tree::Tree::copy_tree() {
     Mutation_Annotated_Tree::Tree out;
     out.node_names=node_names;
     out.node_name_to_idx_map=node_name_to_idx_map;
@@ -196,7 +195,7 @@ Mutation_Annotated_Tree::Tree Mutation_Annotated_Tree::Tree::copy_tree() {
     }
     return out;
 }
-std::string Mutation_Annotated_Tree::Tree::get_clade_assignment (const Node* n, int clade_id, bool include_self) const {
+std::string MatOptimize::Mutation_Annotated_Tree::Tree::get_clade_assignment (const Node* n, int clade_id, bool include_self) const {
     const Node* anc=n;
     while (anc) {
         if (include_self) {
@@ -215,7 +214,7 @@ std::string Mutation_Annotated_Tree::Tree::get_clade_assignment (const Node* n, 
     }
     return "UNDEFINED";
 }
-void Mutation_Annotated_Tree::Tree::populate_ignored_range() {
+void MatOptimize::Mutation_Annotated_Tree::Tree::populate_ignored_range() {
     auto leaves=breadth_first_expansion();
     tbb::parallel_for(tbb::blocked_range<size_t>(0,leaves.size()),[&leaves](const tbb::blocked_range<size_t>& range) {
         for (auto idx=range.begin(); idx<range.end(); idx++) {
@@ -225,7 +224,7 @@ void Mutation_Annotated_Tree::Tree::populate_ignored_range() {
     });
     fprintf(stderr, "populated ignored range\n");
 }
-void Mutation_Annotated_Tree::get_sample_mutation_paths(
+void MatOptimize::Mutation_Annotated_Tree::get_sample_mutation_paths(
     Mutation_Annotated_Tree::Tree *T, std::vector<Node *> samples,
     std::string mutation_paths_filename) {
     FILE *mutation_paths_file = fopen(mutation_paths_filename.c_str(), "w");
@@ -312,8 +311,8 @@ static Node* get_subtree_helper(const std::unordered_set<size_t>& nodes_to_place
         return child_node[0];
     }
 };
-Mutation_Annotated_Tree::Tree
-Mutation_Annotated_Tree::get_subtree(const Mutation_Annotated_Tree::Tree &tree,
+MatOptimize::Mutation_Annotated_Tree::Tree
+MatOptimize::Mutation_Annotated_Tree::get_subtree(const Mutation_Annotated_Tree::Tree &tree,
                                      const std::vector<Node *> &samples,
                                      bool keep_clade_annotations) {
     //Original_State_t ori_state;
@@ -327,9 +326,9 @@ Mutation_Annotated_Tree::get_subtree(const Mutation_Annotated_Tree::Tree &tree,
     }
     return subtree;
 }
-Mutation_Annotated_Tree::Node*
-Mutation_Annotated_Tree::get_subtree_root(const Mutation_Annotated_Tree::Tree &tree,
-                                     const std::vector<Node *> &samples,std::vector<Mutation_Annotated_Tree::Node*>& new_tree_dfs,
+MatOptimize::Mutation_Annotated_Tree::Node*
+MatOptimize::Mutation_Annotated_Tree::get_subtree_root(const MatOptimize::Mutation_Annotated_Tree::Tree &tree,
+                                     const std::vector<Node *> &samples,std::vector<MatOptimize::Mutation_Annotated_Tree::Node*>& new_tree_dfs,
                                      bool keep_clade_annotations) {
     //Original_State_t ori_state;
     //check_samples(tree.root, ori_state, &tree);
@@ -386,7 +385,7 @@ Mutation_Annotated_Tree::get_subtree_root(const Mutation_Annotated_Tree::Tree &t
     //check_samples(subtree.root, ori_state, &subtree,true);
     return root;
 }
-static void rotate_each_node(std::vector<Mutation_Annotated_Tree::Node*>& dfs,bool reverse){
+static void rotate_each_node(std::vector<MatOptimize::Mutation_Annotated_Tree::Node*>& dfs,bool reverse){
     std::unordered_map<Node *, int> num_desc;
 
     for (int i = int(dfs.size()) - 1; i >= 0; i--) {
@@ -412,12 +411,12 @@ static void rotate_each_node(std::vector<Mutation_Annotated_Tree::Node*>& dfs,bo
         }
     }
 }
-void Mutation_Annotated_Tree::Tree::rotate_for_display(bool reverse) {
+void MatOptimize::Mutation_Annotated_Tree::Tree::rotate_for_display(bool reverse) {
     auto dfs = depth_first_expansion();
     rotate_each_node(dfs, reverse);    
 }
-void Mutation_Annotated_Tree::get_random_single_subtree(
-    const Mutation_Annotated_Tree::Tree & T, std::vector<Node *> samples,
+void MatOptimize::Mutation_Annotated_Tree::get_random_single_subtree(
+    const MatOptimize::Mutation_Annotated_Tree::Tree & T, std::vector<Node *> samples,
     std::string outdir, size_t subtree_size, size_t tree_idx, bool use_tree_idx,
     bool retain_original_branch_len, std::vector<Node*> anchor_samples) {
     // timer.Start();
@@ -525,7 +524,7 @@ void Mutation_Annotated_Tree::get_random_single_subtree(
     }
 }
 struct NodeDist {
-                    Mutation_Annotated_Tree::Node* node;
+                    MatOptimize::Mutation_Annotated_Tree::Node* node;
                     uint32_t num_mut;
 
                     NodeDist(Node* n, uint32_t d) {
@@ -591,7 +590,7 @@ static int set_num_leaves_as_bfs_idx(MatOptimize::MAT::Node* root){
     return child_cnt;
 }
 
-void Mutation_Annotated_Tree::get_random_sample_subtrees (const Mutation_Annotated_Tree::Tree& T, std::vector<Node*> samples, std::string outdir, size_t subtree_size, size_t tree_idx, bool use_tree_idx, bool retain_original_branch_len, std::vector<Node*> anchor_samples) {
+void MatOptimize::Mutation_Annotated_Tree::get_random_sample_subtrees (const Mutation_Annotated_Tree::Tree& T, std::vector<Node*> samples, std::string outdir, size_t subtree_size, size_t tree_idx, bool use_tree_idx, bool retain_original_branch_len, std::vector<Node*> anchor_samples) {
     fprintf(stderr, "Computing subtrees for %ld samples. \n\n", samples.size());
     std::string preid = "/";
     if (use_tree_idx) {

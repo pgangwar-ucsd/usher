@@ -22,7 +22,6 @@
 #else
 #define mpi_trace_print(...)
 #endif
-//using namespace MatOptimize;
 extern int switch_to_serial_threshold;
 void check_order(MatOptimize::MAT::Mutations_Collection& in);
 struct To_Place_Sample_Mutation {

@@ -1,6 +1,5 @@
 #include "src/mat_proxy.hpp"
 #include "src/ripples/ripples_fast/ripples_runner.hpp"
-#include "src/usher-sampled/usher.hpp"
 #include <atomic>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -502,18 +501,24 @@ static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
 
         // RIPPLES SERVER INTEGRATION
         ripples::server::MATProxy proxy_tree(tree);
-        auto tree = proxy_tree.clone();
-        if (tree) {
+        auto opt_copied_tree = proxy_tree.clone();
+        if (opt_copied_tree) {
+            auto& copied_tree = opt_copied_tree.value();
             //TODO: Set ripples server parameters
             [[maybe_unused]] uint32_t branch_len = 3;
             [[maybe_unused]] std::string outdir = ".";
             [[maybe_unused]] uint32_t num_desc = 10;
-            // TODO: pass tree.value(), and the rest of parameters to ripples_runner
-            // ripples_runner(MAT::Tree &tree, const std::vector<Missing_Sample> &samples,
-            // uint32_t num_threads, uint32_t branch_len, uint32_t num_desc,
-            // const std::string &outdir)
-            // Then run ripples-fast:
-            // runner();
+            [[maybe_unused]] uint32_t num_threads = 4;
+            auto missing_names = ripples::server::get_missing_sample_names(tree, samples_to_place);
+            if (!missing_names) {
+                // TODO: Handle err
+            }
+            auto missing_samples = ripples::server::collect_missing_samples(copied_tree, missing_names.value());
+            if (!missing_samples) {
+                // TODO: Handle err
+            }
+            ripples::server::ripples_runner runner(copied_tree, missing_samples.value(), num_threads, branch_len, num_desc, outdir);
+            runner();
         }
 
     }

@@ -540,6 +540,17 @@ if(DEFINED Protobuf_PATH)
                 src/matOptimize/main_load_tree.cpp
                 src/matOptimize/priority_conflict_resolver.cpp
                 src/usher-sampled/driver/socket.cpp
+                src/mutation_annotated_tree.cpp
+                src/usher_mapper.cpp
+                src/usher_common.cpp
+                # ripples server
+                src/mat_proxy.cpp
+                src/ripples/ripples_fast/ripples_runner.cpp
+                src/ripples/ripples_fast/ripples_util.cpp
+                src/ripples/ripples_fast/ripples.cpp
+                src/ripples/ripples_fast/ripple_aux.cpp
+                src/ripples/ripples_fast/ripples_mapper.cpp
+                src/ripples/ripples_fast/ripple_merger.cpp
                 ${patch_tree}
                 ${New_Profitable_Moves_Enumerators}
             )

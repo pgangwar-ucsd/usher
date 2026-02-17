@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ripples.hpp"
-#include "src/usher_graph.hpp"
 #include "tbb/concurrent_unordered_set.h"
 #include <array>
 #include <boost/filesystem.hpp>
