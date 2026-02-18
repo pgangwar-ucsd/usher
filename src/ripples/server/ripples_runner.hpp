@@ -21,15 +21,13 @@ struct ripples_parameters {
 };
 
 struct ripples_runner {
-    ripples_runner() = default;
-
     ripples_runner(MAT::Tree &tree, const std::vector<Missing_Sample> &samples,
                    const ripples_parameters &params)
         : T(tree), samples_(samples), num_threads_(params.num_threads),
           branch_len_(params.branch_len), num_desc_(params.num_desc),
           outdir_(params.outdir) {}
 
-    void operator()() {
+    bool operator()() {
         // TODO: Unused constant parameters
         int start_idx = -1;
         int end_idx = -1;
@@ -168,6 +166,7 @@ struct ripples_runner {
         fclose(recomb_file);
 
         fprintf(stderr, "Completed in %ld msec \n\n", timer.Stop());
+        return true;
     }
 
     MAT::Tree &T;

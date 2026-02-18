@@ -36,8 +36,6 @@ bool ripples::server::runner::operator()(const ripples_parameters &params) {
     // Run ripples
     ripples::server::ripples_runner runner(copied_tree, missing_samples.value(),
                                            params);
-    runner();
-
-    return true;
+    return runner();
 }
 

@@ -24,17 +24,7 @@ template <class T> struct is_tree_t {
 struct MATCopyHelper {
     // MAT::Node *copy_node(const std::string &identifier, MAT::Node *parent,
     // OptimizeMAT::Node *node_to_copy) const;
-
-    MAT::Mutation copy_mutation(const OptimizeMAT::Mutation &mutation) const {
-        // NOTE: Chromosome field left as empty string.
-        MAT::Mutation m;
-        m.position = mutation.get_position();
-        // MatOptimize mutation has conversion operators to unpack uint8_t
-        m.ref_nuc = mutation.get_ref_one_hot();
-        m.par_nuc = mutation.get_par_one_hot();
-        m.mut_nuc = mutation.get_mut_one_hot();
-        return m;
-    }
+    MAT::Mutation copy_mutation(const OptimizeMAT::Mutation &mutation) const;
 };
 
 // Usage:
@@ -75,7 +65,6 @@ template <class T> class MATProxy final : is_tree_t<T> {
         }
         MATCopyHelper helper;
 
-        // all_nodes, including leaf nodes, stored in dfs order
         auto *root = tree_.root;
         if (!root) {
             return std::nullopt;
@@ -92,17 +81,17 @@ template <class T> class MATProxy final : is_tree_t<T> {
             MAT::Node *parent_node;
         };
 
-        std::stack<NodeParentPair> dfs_order;
+        std::stack<NodeParentPair> bfs_order;
         // Get all OptimizeMAT children of root
         for (auto *child : root->children) {
-            dfs_order.push(NodeParentPair{child, new_root});
+            bfs_order.push(NodeParentPair{child, new_root});
         }
 
-        while (!dfs_order.empty()) {
+        while (!bfs_order.empty()) {
             // Current node is OptimizeMAT node, while parent_node is copied
             // node already in copied_tree
-            auto [curr_node, parent_node] = dfs_order.top();
-            dfs_order.pop();
+            auto [curr_node, parent_node] = bfs_order.top();
+            bfs_order.pop();
 
             // Create a new node in the copied tree, copying from OptimizeMAT
             // current node
@@ -114,7 +103,7 @@ template <class T> class MATProxy final : is_tree_t<T> {
                 copied_tree.create_node(identifier, parent_node, bl);
             // Copy clade annotations
             new_node->clade_annotations = curr_node->clade_annotations;
-            // Copy additional dfs index metadata
+            // Copy additional bfs index metadata
             new_node->level = curr_node->level;
             new_node->dfs_idx = curr_node->dfs_index;
             new_node->dfs_end_idx = curr_node->dfs_end_index;
@@ -133,7 +122,7 @@ template <class T> class MATProxy final : is_tree_t<T> {
                 // Child is OptimizeMAT node, but parent is new_node
                 // in copied tree,
                 // otherwise link to parent in copied tree will be broken
-                dfs_order.push(NodeParentPair{child, new_node});
+                bfs_order.push(NodeParentPair{child, new_node});
             }
         }
         return std::make_optional<MAT::Tree>(copied_tree);
