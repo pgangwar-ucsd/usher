@@ -1,5 +1,4 @@
-#include "src/mat_proxy.hpp"
-#include "src/ripples/ripples_fast/ripples_runner.hpp"
+#include "src/ripples/server/ripples_server.hpp"
 #include <atomic>
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
@@ -500,26 +499,15 @@ static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
         fputc('\n', f);
 
         // RIPPLES SERVER INTEGRATION
-        ripples::server::MATProxy proxy_tree(tree);
-        auto opt_copied_tree = proxy_tree.clone();
-        if (opt_copied_tree) {
-            auto& copied_tree = opt_copied_tree.value();
-            //TODO: Set ripples server parameters
-            [[maybe_unused]] uint32_t branch_len = 3;
-            [[maybe_unused]] std::string outdir = ".";
-            [[maybe_unused]] uint32_t num_desc = 10;
-            [[maybe_unused]] uint32_t num_threads = 4;
-            auto missing_names = ripples::server::get_missing_sample_names(tree, samples_to_place);
-            if (!missing_names) {
-                // TODO: Handle err
-            }
-            auto missing_samples = ripples::server::collect_missing_samples(copied_tree, missing_names.value());
-            if (!missing_samples) {
-                // TODO: Handle err
-            }
-            ripples::server::ripples_runner runner(copied_tree, missing_samples.value(), num_threads, branch_len, num_desc, outdir);
-            runner();
-        }
+        //TODO: Set ripples server parameters
+        uint32_t branch_len = 3;
+        uint32_t num_desc = 10;
+        std::string outdir = ".";
+        //uint32_t num_threads = 4;
+
+        ripples::server::runner ripples_runner(tree, samples_to_place);
+        ripples::server::ripples_parameters params{branch_len, num_desc, num_threads, outdir};
+        [[maybe_unused]]auto success = ripples_runner(params);
 
     }
     fputc(4, f);

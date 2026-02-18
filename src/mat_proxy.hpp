@@ -15,18 +15,6 @@ namespace MAT = Mutation_Annotated_Tree;
 // matOptimize defined MAT Tree inferface
 namespace OptimizeMAT = MatOptimize::Mutation_Annotated_Tree;
 
-using SampleNames = std::vector<std::string>;
-using MissingSamples = std::vector<Missing_Sample>;
-
-// TODO: Move this into ripples runner
-std::optional<std::vector<std::string>>
-get_missing_sample_names(const MatOptimize::MAT::Tree &tree,
-                         const std::vector<Sample_Muts> &missing_samples);
-
-std::optional<std::vector<Missing_Sample>>
-collect_missing_samples(const MAT::Tree &tree,
-                        const std::vector<std::string> &missing_sample_names);
-
 template <class T> struct is_tree_t {
     static_assert(std::is_same_v<std::decay_t<T>, MAT::Tree> ||
                       std::is_same_v<std::decay_t<T>, OptimizeMAT::Tree>,
@@ -36,7 +24,17 @@ template <class T> struct is_tree_t {
 struct MATCopyHelper {
     // MAT::Node *copy_node(const std::string &identifier, MAT::Node *parent,
     // OptimizeMAT::Node *node_to_copy) const;
-    MAT::Mutation copy_mutation(const OptimizeMAT::Mutation &mutation) const;
+
+    MAT::Mutation copy_mutation(const OptimizeMAT::Mutation &mutation) const {
+        // NOTE: Chromosome field left as empty string.
+        MAT::Mutation m;
+        m.position = mutation.get_position();
+        // MatOptimize mutation has conversion operators to unpack uint8_t
+        m.ref_nuc = mutation.get_ref_one_hot();
+        m.par_nuc = mutation.get_par_one_hot();
+        m.mut_nuc = mutation.get_mut_one_hot();
+        return m;
+    }
 };
 
 // Usage:
@@ -51,6 +49,9 @@ struct MATCopyHelper {
 template <class T> class MATProxy final : is_tree_t<T> {
   public:
     MATProxy(const T &tree) : tree_(tree) {}
+
+    // Getter for underlying tree held
+    const auto &data() const noexcept { return tree_; }
 
     auto clone() const {
         using tree_t = std::decay_t<T>;
@@ -70,7 +71,6 @@ template <class T> class MATProxy final : is_tree_t<T> {
     std::optional<MAT::Tree> copy_matoptimize_to_mat() const {
         MAT::Tree copied_tree;
         if (tree_.get_size_upper() == 0) {
-            // TODO: warn empty tree, error?
             return std::nullopt;
         }
         MATCopyHelper helper;
@@ -125,7 +125,7 @@ template <class T> class MATProxy final : is_tree_t<T> {
             for (const auto &mut : curr_node->mutations.mutations) {
                 new_node->mutations.emplace_back(helper.copy_mutation(mut));
             }
-						// Add new node as child of previous parent node
+            // Add new node as child of previous parent node
             parent_node->children.push_back(new_node);
 
             // Collect all the children of current OptimizeMAT nodes
@@ -140,6 +140,8 @@ template <class T> class MATProxy final : is_tree_t<T> {
     }
 
     std::optional<MatOptimize::MAT::Tree> copy_mat_to_matoptimize() const {
+        // TODO: Currently unused by any workflow
+        // Needs further testing before use
         // TODO: implement copy_mat_to_matoptimize
         return std::nullopt;
     }

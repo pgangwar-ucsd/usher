@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ripples_util.hpp"
+#include "src/ripples/ripples_fast/ripples_util.hpp"
 #include "src/usher_graph.hpp"
 #include "tbb/concurrent_unordered_set.h"
 #include <array>
@@ -13,12 +13,21 @@
 
 namespace ripples::server {
 
+struct ripples_parameters {
+    uint32_t branch_len;
+    uint32_t num_desc;
+    uint32_t num_threads;
+    std::string outdir;
+};
+
 struct ripples_runner {
+    ripples_runner() = default;
+
     ripples_runner(MAT::Tree &tree, const std::vector<Missing_Sample> &samples,
-                   uint32_t num_threads, uint32_t branch_len, uint32_t num_desc,
-                   const std::string &outdir)
-        : T(tree), samples_(samples), num_threads_(num_threads),
-          branch_len_(branch_len), num_desc_(num_desc), outdir_(outdir) {}
+                   const ripples_parameters &params)
+        : T(tree), samples_(samples), num_threads_(params.num_threads),
+          branch_len_(params.branch_len), num_desc_(params.num_desc),
+          outdir_(params.outdir) {}
 
     void operator()() {
         // TODO: Unused constant parameters
