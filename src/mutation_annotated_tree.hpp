@@ -158,6 +158,7 @@ class Tree {
     void collapse_tree();
     void rotate_for_display(bool reverse = false);
     void rotate_for_consistency();
+    void update_all_nodes(Node* node);
 };
 
 std::string get_newick_string(const Tree& T, bool b1, bool b2, bool b3=false, bool b4=false);

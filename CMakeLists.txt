@@ -82,6 +82,7 @@ file(GLOB RIPPLES_SERVER_SRCS "src/ripples/server/*.cpp" "src/ripples/server/*.h
 file(GLOB USHER_SAMPLED_SRCS "src/usher-sampled/static_tree_mapper/*" "src/usher-sampled/*.cpp" "src/usher-sampled/*.hpp")
 file(GLOB RIPPLES_FAST_SRCS "src/ripples/ripples_fast/*.cpp" "src/ripples/ripples_fast/*.hpp")
 file(GLOB RIPPLES_UTILS_SRCS "src/ripples/util/*.cpp" "src/ripples/util/*.hpp")
+file(GLOB RIPPLES_COPY_UTIL_SRCS "src/ripples/util/copy/*.cpp" "src/ripples/util/copy/*.hpp")
 
 set_source_files_properties(src/mutation_annotated_tree.cpp PROPERTIES COMPILE_FLAGS -O3)
 set_source_files_properties(src/usher-sampled/wait_debug.cpp PROPERTIES COMPILE_FLAGS -O0)
@@ -507,13 +508,13 @@ if(DEFINED Protobuf_PATH)
                 src/usher_mapper.cpp
                 src/usher_common.cpp
                 # ripples server
-                src/mat_proxy.cpp
                 src/ripples/ripples_fast/ripples_util.cpp
                 src/ripples/ripples_fast/ripples.cpp
                 src/ripples/ripples_fast/ripple_aux.cpp
                 src/ripples/ripples_fast/ripples_mapper.cpp
                 src/ripples/ripples_fast/ripple_merger.cpp
                 ${RIPPLES_SERVER_SRCS}
+                ${RIPPLES_COPY_UTIL_SRCS}
                 ${patch_tree}
                 ${New_Profitable_Moves_Enumerators}
             )

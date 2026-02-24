@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/mat_proxy.hpp"
+#include "src/ripples/util/copy/mat_proxy.hpp"
 #include <optional>
 
 namespace ripples::server {
