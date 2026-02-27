@@ -2277,7 +2277,3 @@ void Mutation_Annotated_Tree::read_vcf(Mutation_Annotated_Tree::Tree* T, std::st
         }
     }
 }
-
-void Mutation_Annotated_Tree::Tree::update_all_nodes(Node* node) {
-    all_nodes[node->identifier] = node;
-}

@@ -32,7 +32,8 @@ template <class T> class MATProxy final : is_tree_t<T> {
         if constexpr (std::is_same_v<tree_t, MatOptimize::MAT::Tree>) {
             std::cerr << "Copying MatOptimize::MAT::Tree to MAT::Tree\n";
             MATCopyHelper helper(tree_);
-            return helper.copy_to_mat();
+            auto opt_copied_tree = helper.copy_to_mat();
+            return opt_copied_tree;
         }
         // Otherwise underlying tree type if MAT, conver to MatOptimize::MAT
         else {

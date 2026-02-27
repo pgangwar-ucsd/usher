@@ -1,94 +1,124 @@
 #include "mat_copy_helper.hpp"
-
-ripples::server::MAT::Mutation ripples::server::MATCopyHelper::copy_mutation(
-    const OptimizeMAT::Mutation &mutation) const {
-    // NOTE: Chromosome field left as empty string.
-    MAT::Mutation m;
-    m.position = mutation.get_position();
-    // MatOptimize mutation has conversion operators to unpack uint8_t
-    m.ref_nuc = mutation.get_ref_one_hot();
-    m.par_nuc = mutation.get_par_one_hot();
-    m.mut_nuc = mutation.get_mut_one_hot();
-    return m;
-}
-
-ripples::server::MAT::Node *
-ripples::server::MATCopyHelper::copy_root(OptimizeMAT::Node *root) const {
-    MAT::Node *new_root = new MAT::Node();
-    new_root->identifier = get_node_name(tree.root);
-    new_root->branch_length = static_cast<float>(tree.root->branch_length);
-    new_root->level = tree.root->level;
-    new_root->parent = nullptr;
-    return new_root;
-}
-
-std::string
-ripples::server::MATCopyHelper::get_node_name(OptimizeMAT::Node *node) const {
-    auto nid = node->node_id;
-    auto identifier = tree.get_node_name(nid);
-    // Check if node is a sample node
-    // MATOptimize only stores sample names
-    if (!identifier.empty()) {
-        return identifier;
-    }
-    // Otherwise, get internal node id name
-    return "node_" + std::to_string(nid);
-}
-
 std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat() const {
-		Timer timer;
-		timer.Start();
-    MAT::Tree copied_tree;
+    Timer timer;
+    timer.Start();
+    std::optional<MAT::Tree> result(std::in_place);
+    MAT::Tree &copied_tree = result.value();
+
     if (tree.get_size_upper() == 0) {
         std::cerr << "Tree size is empty!\n";
         return std::nullopt;
     }
-    struct NodeParentPair {
-        OptimizeMAT::Node *curr_node;
-        MAT::Node *parent_node;
-    };
-    std::queue<NodeParentPair> remaining_nodes;
 
-    // Copy and update root node in new tree
-    auto *new_root = copy_root(tree.root);
-    copied_tree.root = new_root;
-    copied_tree.update_all_nodes(new_root);
-    for (auto *child : tree.root->children) {
-        remaining_nodes.push({child, new_root});
+    const size_t size_upper = tree.get_size_upper();
+
+    copied_tree.preallocated_nodes.resize(size_upper);
+    copied_tree.all_nodes.reserve(size_upper);
+
+    std::vector<std::pair<OptimizeMAT::Node*, int>> bfs_stack;
+    std::vector<int> child_indices;
+    std::vector<std::string> node_names(size_upper);
+    std::vector<int> mut_counts(size_upper, 0);
+    std::vector<int> child_counts(size_upper, 0);
+    const auto& matoptimize_all_names = tree.get_node_names();
+
+    bfs_stack.reserve(size_upper);
+    child_indices.reserve(size_upper);
+    bfs_stack.emplace_back(tree.root, -1);
+
+    // Serial BFS: build traversal order to guide parallel copy, and collect mutation/child counts for pre-allocation
+    for (size_t front = 0; front < bfs_stack.size(); ++front)
+    {
+        auto [matoptimize_curr, mat_parent] = bfs_stack[front];
+
+        auto it = matoptimize_all_names.find(matoptimize_curr->node_id);
+        node_names[front] = (it != matoptimize_all_names.end()) ? it->second : "node_" + std::to_string(matoptimize_curr->node_id);
+
+        mut_counts[front] = (int)matoptimize_curr->mutations.mutations.size();
+
+        if (matoptimize_curr->children.empty())
+        {
+            child_indices.emplace_back(-1);
+        }
+        else
+        {
+            child_counts[front] = (int)matoptimize_curr->children.size();
+            child_indices.emplace_back((int)bfs_stack.size());
+            for (const auto& c : matoptimize_curr->children)
+            {
+                bfs_stack.emplace_back(c, (int)front);
+            }
+        }
     }
 
-    while (!remaining_nodes.empty()) {
-        auto [matoptimize_curr, mat_parent] = remaining_nodes.front();
-        remaining_nodes.pop();
-
-        MAT::Node *new_node = new MAT::Node();
-        // Copy standard attributes
-        new_node->identifier = get_node_name(matoptimize_curr);
-        new_node->branch_length =
-            static_cast<float>(matoptimize_curr->branch_length);
-        new_node->level = matoptimize_curr->level;
-        // Link to parent in newly created MAT tree
-        new_node->parent = mat_parent;
-        mat_parent->children.push_back(new_node);
-
-        // Copy mutations
-        size_t num_mutations = matoptimize_curr->mutations.mutations.size();
-        new_node->mutations.reserve(num_mutations);
-        for (const auto &mut : matoptimize_curr->mutations.mutations) {
-            new_node->mutations.emplace_back(copy_mutation(mut));
-        }
-        // Register node
-        copied_tree.update_all_nodes(new_node);
-        for (auto *child : matoptimize_curr->children) {
-            remaining_nodes.push({child, new_node});
-        }
+    // Serial pre-allocation: resize mutations and children before parallel phase
+    for (size_t k = 0; k < bfs_stack.size(); ++k)
+    {
+        if (mut_counts[k] > 0)
+            copied_tree.preallocated_nodes[k].mutations.resize(mut_counts[k]);
+        if (child_counts[k] > 0)
+            copied_tree.preallocated_nodes[k].children.resize(child_counts[k]);
     }
-		// TESTING
+
+    // Parallel fill
+    static tbb::affinity_partitioner ap;
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, bfs_stack.size()),
+    [&](tbb::blocked_range<size_t> r) {
+        for (size_t k = r.begin(); k < r.end(); ++k) {
+            auto [matoptimize_curr, mat_parent] = bfs_stack[k];
+            auto c_idx_start = child_indices[k];
+            MAT::Node *new_node = &copied_tree.preallocated_nodes[k];
+
+            // Updating node identifier, branch length, and level
+            new_node->identifier = std::move(node_names[k]);
+            new_node->branch_length = static_cast<float>(matoptimize_curr->branch_length);
+            new_node->level = matoptimize_curr->level;
+
+            // Fill pre-sized children array
+            if (c_idx_start > 0)
+            {
+                const int num_children = child_counts[k];
+                for (int i = 0; i < num_children; i++)
+                    new_node->children[i] = &copied_tree.preallocated_nodes[c_idx_start + i];
+            }
+
+            if (mat_parent == -1)
+            {
+                new_node->parent = nullptr;
+                copied_tree.root = new_node;
+            }
+            else
+            {
+                new_node->parent = &copied_tree.preallocated_nodes[mat_parent];
+            }
+
+            // Fill pre-sized mutations array 
+            const int num_mutations = mut_counts[k];
+            for (int i = 0; i < num_mutations; i++)
+            {
+                auto& m = new_node->mutations[i];
+                const auto& src_mut = matoptimize_curr->mutations.mutations[i];
+                m.position = src_mut.get_position();
+                m.ref_nuc = src_mut.get_ref_one_hot();
+                m.par_nuc = src_mut.get_par_one_hot();
+                m.mut_nuc = src_mut.get_mut_one_hot();
+            }
+        }
+    }, ap);
+
+    // Serial post-pass: populate all_nodes map after identifiers are finalized
+    for (size_t k = 0; k < bfs_stack.size(); ++k)
+    {
+        MAT::Node* node = &copied_tree.preallocated_nodes[k];
+        copied_tree.all_nodes[node->identifier] = node;
+    }
+
+	// TESTING
     std::cerr << "Finished tree copy in mat_proxy clone\n";
     std::cerr << "Original Root Children: " << tree.root->children.size()
               << "\n";
     std::cerr << "New Root Children: " << copied_tree.root->children.size()
               << "\n";
-		std::cerr << "Tree copied in: " << timer.Stop() << " msec \n";
-    return std::make_optional<MAT::Tree>(copied_tree);
+	std::cerr << "Tree copied in: " << timer.Stop() << " msec \n";
+    return result;
 }
