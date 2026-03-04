@@ -282,6 +282,8 @@ std::string get_options(FILE *f, Leader_Thread_Options &options,std::string& ext
         "Input VCF file (in uncompressed or gzip-compressed .gz format)")
         ("existing_samples", po::value<std::string>(&extract_from_existing),
         "extract from existing samples")
+        ("run-ripples", po::bool_switch(&options.run_ripples)->default_value(false),
+        "After placing samples, run ripples to search for evidence of recombination")
         ("anchor_samples", po::value<std::string>(&options.out_options.anchor_samples_file),
          "add samples from file to generated subtree(s)")
         (
@@ -498,16 +500,19 @@ static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
                      position_wise_out, false);
         fputc('\n', f);
 
-        // RIPPLES SERVER INTEGRATION
-        //TODO: Set ripples server parameters
-        uint32_t branch_len = 3;
-        uint32_t num_desc = 10;
-        std::string outdir = ".";
-        //uint32_t num_threads = 4;
+        if (options.run_ripples) {
+            // RIPPLES SERVER INTEGRATION
+            //TODO: Set ripples server parameters
+            uint32_t branch_len = 3;
+            uint32_t num_desc = 10;
+            std::string outdir = options.out_options.outdir;
+            //uint32_t num_threads = 4;
+            std::vector<MAT::Node> preallocated_nodes(tree.get_size_upper());
 
-        ripples::server::runner ripples_runner(tree, samples_to_place);
-        ripples::server::ripples_parameters params{branch_len, num_desc, num_threads, outdir};
-        [[maybe_unused]]auto success = ripples_runner(params);
+            ripples::server::runner ripples_runner(tree, samples_to_place, preallocated_nodes);
+            ripples::server::ripples_parameters params{branch_len, num_desc, num_threads, outdir};
+            [[maybe_unused]]auto success = ripples_runner(params);
+        }
 
     }
     fputc(4, f);

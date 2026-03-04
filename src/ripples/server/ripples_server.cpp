@@ -3,12 +3,12 @@
 
 ripples::server::runner::runner(
     ripples::server::runner::InputTree &tree,
-    const ripples::server::runner::MissingSamples &missing_samples)
-    : proxy_tree_(tree), missing_samples_(missing_samples) {}
+    const ripples::server::runner::MissingSamples &missing_samples, std::vector<MAT::Node> &preallocated_nodes)
+    : proxy_tree_(tree), missing_samples_(missing_samples), preallocated_nodes_(preallocated_nodes) {}
 
 bool ripples::server::runner::operator()(const ripples_parameters &params) {
     // Copy OptimizeMAT::MAT::Tree to MAT::Tree
-    auto opt_copied_tree = proxy_tree_.clone();
+    auto opt_copied_tree = proxy_tree_.clone(preallocated_nodes_);
     if (!opt_copied_tree) {
         std::cerr
             << "[Error] Failed to copy MatOptimize::MAT::Tree to MAT::Tree\n";

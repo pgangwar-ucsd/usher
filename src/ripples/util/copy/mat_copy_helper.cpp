@@ -1,5 +1,5 @@
 #include "mat_copy_helper.hpp"
-std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat() const {
+std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat(std::vector<MAT::Node> &preallocated_nodes) const {
     Timer timer;
     timer.Start();
     std::optional<MAT::Tree> result(std::in_place);
@@ -11,8 +11,6 @@ std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat() const {
     }
 
     const size_t size_upper = tree.get_size_upper();
-
-    copied_tree.preallocated_nodes.resize(size_upper);
     copied_tree.all_nodes.reserve(size_upper);
 
     std::vector<std::pair<OptimizeMAT::Node*, int>> bfs_stack;
@@ -50,14 +48,14 @@ std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat() const {
             }
         }
     }
-
+	
     // Serial pre-allocation: resize mutations and children before parallel phase
     for (size_t k = 0; k < bfs_stack.size(); ++k)
     {
         if (mut_counts[k] > 0)
-            copied_tree.preallocated_nodes[k].mutations.resize(mut_counts[k]);
+            preallocated_nodes[k].mutations.resize(mut_counts[k]);
         if (child_counts[k] > 0)
-            copied_tree.preallocated_nodes[k].children.resize(child_counts[k]);
+            preallocated_nodes[k].children.resize(child_counts[k]);
     }
 
     // Parallel fill
@@ -67,7 +65,7 @@ std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat() const {
         for (size_t k = r.begin(); k < r.end(); ++k) {
             auto [matoptimize_curr, mat_parent] = bfs_stack[k];
             auto c_idx_start = child_indices[k];
-            MAT::Node *new_node = &copied_tree.preallocated_nodes[k];
+            MAT::Node *new_node = &preallocated_nodes[k];
 
             // Updating node identifier, branch length, and level
             new_node->identifier = std::move(node_names[k]);
@@ -79,7 +77,7 @@ std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat() const {
             {
                 const int num_children = child_counts[k];
                 for (int i = 0; i < num_children; i++)
-                    new_node->children[i] = &copied_tree.preallocated_nodes[c_idx_start + i];
+                    new_node->children[i] = &preallocated_nodes[c_idx_start + i];
             }
 
             if (mat_parent == -1)
@@ -89,7 +87,7 @@ std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat() const {
             }
             else
             {
-                new_node->parent = &copied_tree.preallocated_nodes[mat_parent];
+                new_node->parent = &preallocated_nodes[mat_parent];
             }
 
             // Fill pre-sized mutations array 
@@ -109,7 +107,7 @@ std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat() const {
     // Serial post-pass: populate all_nodes map after identifiers are finalized
     for (size_t k = 0; k < bfs_stack.size(); ++k)
     {
-        MAT::Node* node = &copied_tree.preallocated_nodes[k];
+        MAT::Node* node = &preallocated_nodes[k];
         copied_tree.all_nodes[node->identifier] = node;
     }
 

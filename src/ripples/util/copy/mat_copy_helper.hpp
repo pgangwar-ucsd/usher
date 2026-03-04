@@ -23,7 +23,7 @@ struct MATCopyHelper {
     std::string get_node_name(OptimizeMAT::Node *node) const;
     MAT::Node *copy_root(OptimizeMAT::Node *root) const;
 
-    std::optional<MAT::Tree> copy_to_mat() const;
+    std::optional<MAT::Tree> copy_to_mat(std::vector<MAT::Node> &preallocated_nodes) const;
 
     const OptimizeMAT::Tree &tree;
 };

@@ -130,7 +130,6 @@ class Tree {
     tbb::concurrent_unordered_map<std::string, std::vector<std::string>> condensed_nodes;
     tbb::concurrent_unordered_set<std::string> condensed_leaves;
     std::unordered_map <std::string, Node*> all_nodes;
-    std::vector<Node> preallocated_nodes;
 
     size_t curr_internal_node;
     size_t get_max_level () const;

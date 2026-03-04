@@ -146,6 +146,7 @@ struct Leader_Thread_Options {
     bool no_add;
     std::string diff_file_name;
     std::string reference_file_name;
+    bool run_ripples;
 };
 int set_descendant_count(MatOptimize::MAT::Node* root);
 void discretize_mutations(const std::vector<To_Place_Sample_Mutation> &in,
