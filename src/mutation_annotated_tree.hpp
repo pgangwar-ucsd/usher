@@ -2,6 +2,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <stdio.h>
 #include <vector>
@@ -103,6 +104,7 @@ class Node {
     Node();
     Node(std::string id, float l);
     Node(std::string id, Node* p, float l);
+    explicit Node(std::string_view id, Node* p, float bl, size_t level);
 
     void add_mutation(Mutation mut);
     void clear_mutations();
@@ -120,6 +122,7 @@ class Tree {
         curr_internal_node = 0;
         all_nodes.clear();
     }
+    explicit Tree(size_t num_nodes);
 
     std::string new_internal_node_id() {
         return "node_" + std::to_string(++curr_internal_node);
@@ -158,6 +161,8 @@ class Tree {
     void collapse_tree();
     void rotate_for_display(bool reverse = false);
     void rotate_for_consistency();
+
+    std::unordered_map<std::string, Node*>& get_all_nodes();
 };
 
 std::string get_newick_string(const Tree& T, bool b1, bool b2, bool b3=false, bool b4=false);

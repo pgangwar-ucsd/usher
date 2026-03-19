@@ -714,6 +714,12 @@ Mutation_Annotated_Tree::Node::Node (std::string id, Node* p, float len) {
     mutations.clear();
 }
 
+Mutation_Annotated_Tree::Node::Node(std::string_view id, Node* p, float bl, size_t level):
+    level(level), branch_length(bl), identifier(id), parent(p), dfs_idx(0), dfs_end_idx(0) {
+    clade_annotations.clear();
+    mutations.clear();
+}
+
 // Assumes mutations are added in chronological order. If a new mutation occurs
 // at the same position, it should either be updated to the new allele or
 // removed entirely (in case of reversal mutation)
@@ -2276,4 +2282,12 @@ void Mutation_Annotated_Tree::read_vcf(Mutation_Annotated_Tree::Tree* T, std::st
             }
         }
     }
+}
+
+Mutation_Annotated_Tree::Tree::Tree(size_t num_nodes): root(NULL), curr_internal_node(0) {
+    all_nodes.reserve(num_nodes);
+}
+
+std::unordered_map<std::string, Mutation_Annotated_Tree::Node*>& Mutation_Annotated_Tree::Tree::get_all_nodes() {
+    return all_nodes;
 }
