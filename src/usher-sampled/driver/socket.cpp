@@ -506,10 +506,8 @@ static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
             uint32_t branch_len = 3;
             uint32_t num_desc = 10;
             std::string outdir = options.out_options.outdir;
-            //uint32_t num_threads = 4;
-            std::vector<MAT::Node> preallocated_nodes(tree.get_size_upper());
-
-            ripples::server::runner ripples_runner(tree, samples_to_place, preallocated_nodes);
+            tree.uncondense_leaves();
+            ripples::server::runner ripples_runner(tree, samples_to_place);
             ripples::server::ripples_parameters params{branch_len, num_desc, num_threads, outdir};
             [[maybe_unused]]auto success = ripples_runner(params);
         }

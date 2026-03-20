@@ -26,13 +26,13 @@ template <class T> class MATProxy final : is_tree_t<T> {
     // Getter for underlying tree held
     const auto &data() const noexcept { return tree_; }
 
-    auto clone(std::vector<MAT::Node> &preallocated_nodes) const {
+    auto clone(std::vector<MAT::Node> &storage, uint32_t num_threads) const {
         using tree_t = std::decay_t<T>;
         // If given tree type is MatOptimize::MAT, convert to MAT
         if constexpr (std::is_same_v<tree_t, MatOptimize::MAT::Tree>) {
             std::cerr << "Copying MatOptimize::MAT::Tree to MAT::Tree\n";
             MATCopyHelper helper(tree_);
-            auto opt_copied_tree = helper.copy_to_mat(preallocated_nodes);
+            auto opt_copied_tree = helper.copy_to_mat_parallel(storage, num_threads);
             return opt_copied_tree;
         }
         // Otherwise underlying tree type if MAT, conver to MatOptimize::MAT

@@ -10,14 +10,14 @@ class runner {
     using InputTree = MatOptimize::MAT::Tree;
     using MissingSamples = std::vector<Sample_Muts>;
 
-    runner(InputTree &tree, const MissingSamples &missing_samples, std::vector<MAT::Node> &preallocated_nodes);
+    runner(InputTree &tree, const MissingSamples &missing_samples);
 
     bool operator()(const ripples_parameters &params);
 
   private:
     MATProxy<InputTree> proxy_tree_;
     const MissingSamples &missing_samples_;
-    std::vector<MAT::Node> &preallocated_nodes_;
+    std::vector<MAT::Node> storage_;
 };
 }; // namespace ripples::server
 
