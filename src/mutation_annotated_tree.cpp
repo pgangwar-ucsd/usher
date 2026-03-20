@@ -953,6 +953,27 @@ std::vector<Mutation_Annotated_Tree::Node*> Mutation_Annotated_Tree::Tree::rsear
     return ancestors;
 }
 
+std::vector<Mutation_Annotated_Tree::Node*> Mutation_Annotated_Tree::Tree::rsearch (const std::string& nid, size_t radius, bool include_self) const {
+    std::vector<Node*> ancestors;
+    Node* node = get_node(nid);
+    if (node==NULL) {
+        return ancestors;
+    }
+    if (include_self) {
+        ancestors.reserve(node->level+1);
+        ancestors.emplace_back(node);
+    } else {
+        ancestors.reserve(node->level);
+    }
+    size_t ancestors_considered{0};
+    while (node->parent != NULL && ancestors_considered < radius) {
+        ancestors.emplace_back(node->parent);
+        node = node->parent;
+        ++ancestors_considered;
+    }
+    return ancestors;
+}
+
 std::string Mutation_Annotated_Tree::Tree::get_clade_assignment (const Node* n, int clade_id, bool include_self) const {
     assert ((size_t)clade_id < get_num_annotations());
     for (auto anc: rsearch(n->identifier, include_self)) {

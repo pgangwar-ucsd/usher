@@ -147,6 +147,7 @@ class Tree {
     Node* get_node (std::string identifier) const;
     bool is_ancestor (std::string anc_id, std::string nid) const;
     std::vector<Node*> rsearch (const std::string& nid, bool include_self = false) const;
+    std::vector<Node*> rsearch (const std::string& nid, size_t radius, bool include_self = false) const;
     std::string get_clade_assignment (const Node* n, int clade_id, bool include_self = true) const;
     void remove_node (std::string nid, bool move_level);
     void remove_single_child_nodes();

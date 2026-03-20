@@ -16,6 +16,7 @@ namespace ripples::server {
 struct ripples_parameters {
     uint32_t branch_len;
     uint32_t num_desc;
+    uint32_t ancestor_radius;
     uint32_t num_threads;
     std::string outdir;
 };
@@ -25,7 +26,7 @@ struct ripples_runner {
                    const ripples_parameters &params)
         : T(tree), samples_(samples), num_threads_(params.num_threads),
           branch_len_(params.branch_len), num_desc_(params.num_desc),
-          outdir_(params.outdir) {}
+          ancestor_radius_(params.ancestor_radius), outdir_(params.outdir) {}
 
     bool operator()() {
         // TODO: Unused constant parameters
@@ -45,16 +46,27 @@ struct ripples_runner {
         T.uncondense_leaves();
         timer.Start();
 
+        auto passing_ripples_filter = [&tree = T, bl = branch_len_,
+                                       desc = num_desc_](MAT::Node *node) {
+            if (node->mutations.size() >= bl &&
+                tree.get_num_leaves(node) >= desc) {
+                return true;
+            }
+            return false;
+        };
+
         tbb::concurrent_unordered_set<MAT::Node *, idx_hash, idx_eq>
             nodes_to_consider;
         auto dfs = T.depth_first_expansion();
 
         for (const auto &sample : samples_) {
-            for (auto anc : T.rsearch(sample.name, true)) {
+            for (auto anc : T.rsearch(sample.name, ancestor_radius_, true)) {
                 if (anc->is_root()) {
-                    continue;
+                    break;
                 }
-                nodes_to_consider.insert(anc);
+                if (passing_ripples_filter(anc)) {
+                    nodes_to_consider.insert(anc);
+                }
             }
         }
 
@@ -80,7 +92,8 @@ struct ripples_runner {
 
         auto desc_filename = outdir_ + "/descendants.tsv";
         fprintf(stderr,
-                "Creating file %s to write descendants of recombinant nodes\n",
+                "Creating file %s to write descendants of "
+                "recombinant nodes\n",
                 desc_filename.c_str());
         FILE *desc_file = fopen(desc_filename.c_str(), "w");
         fprintf(desc_file, "#node_id\tdescendants\n");
@@ -92,7 +105,8 @@ struct ripples_runner {
         fprintf(recomb_file,
                 "#recomb_node_id\tbreakpoint-1_interval\tbreakpoint-2_"
                 "interval\tdonor_"
-                "node_id\tdonor_is_sibling\tdonor_parsimony\tacceptor_node_"
+                "node_id\tdonor_is_sibling\tdonor_parsimony\tacceptor_"
+                "node_"
                 "id\tacceptor_is_sibling\tacceptor_parsimony\toriginal_"
                 "parsimony\tmin_"
                 "starting_parsimony\trecomb_parsimony\n");
@@ -125,10 +139,10 @@ struct ripples_runner {
             }
         }
 
-        fprintf(
-            stderr,
-            "%zu out of %zu nodes have enough descendant to be donor/acceptor",
-            nodes_to_search.size(), dfs.size());
+        fprintf(stderr,
+                "%zu out of %zu nodes have enough descendant to be "
+                "donor/acceptor",
+                nodes_to_search.size(), dfs.size());
         size_t s = 0, e = nodes_to_consider.size();
 
         if ((start_idx >= 0) && (end_idx >= 0)) {
@@ -139,7 +153,8 @@ struct ripples_runner {
         }
 
         fprintf(stderr,
-                "Running placement individually for %zu branches to identify "
+                "Running placement individually for %zu branches "
+                "to identify "
                 "potential recombination events.\n",
                 e - s);
 
@@ -174,6 +189,7 @@ struct ripples_runner {
     uint32_t num_threads_;
     uint32_t branch_len_;
     uint32_t num_desc_;
+    uint32_t ancestor_radius_;
     std::string outdir_;
 };
 }; // namespace ripples::server

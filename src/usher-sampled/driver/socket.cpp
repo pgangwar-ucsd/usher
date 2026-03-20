@@ -503,12 +503,13 @@ static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
         if (options.run_ripples) {
             // RIPPLES SERVER INTEGRATION
             //TODO: Set ripples server parameters
-            uint32_t branch_len = 3;
-            uint32_t num_desc = 10;
+            uint32_t branch_len = 2;
+            uint32_t num_desc = 5;
+            uint32_t ancestor_radius = 3;
             std::string outdir = options.out_options.outdir;
             tree.uncondense_leaves();
             ripples::server::runner ripples_runner(tree, samples_to_place);
-            ripples::server::ripples_parameters params{branch_len, num_desc, num_threads, outdir};
+            ripples::server::ripples_parameters params{branch_len, num_desc, ancestor_radius, num_threads, outdir};
             [[maybe_unused]]auto success = ripples_runner(params);
         }
 
