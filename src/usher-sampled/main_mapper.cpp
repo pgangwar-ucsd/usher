@@ -506,7 +506,7 @@ place_main_tree(const std::vector<To_Place_Sample_Mutation> &mutations,
     });
 
     executor.run(taskflow).wait();
-
+        
     assert(!output.targets.empty());
     return std::make_tuple(std::move(output.targets), output.best_par_score);
 }

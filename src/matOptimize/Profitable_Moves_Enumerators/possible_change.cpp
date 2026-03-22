@@ -204,20 +204,22 @@ struct Walker {
             output->push_back(Sensitive_Alleles{INT_MAX});
         }
     }
-    void execute(tbb::task_group &tg) {
+    void execute(tbb::task_group &parent_tg) {
         std::vector<Walker> tasks;
         tasks.reserve(root->children.size());
+        tbb::task_group tg;
         for (auto* child : root->children) {
             if (child->is_leaf()) {
                 merge(child, nullptr);
             } else {
                 Walker &child_task = tasks.emplace_back(child, pos_tree);
                 merge(child, &child_task.sensitive_locus);
-                tg.run([this, &tg, child, &child_task] {
+                tg.run([&tg, &child_task] {
                   child_task.execute(tg);
                 });
             }
         }
+        tg.wait();
     }
 };
 void output_addable_idxes(pos_tree_t &in,

@@ -85,12 +85,15 @@ void build_task_graph(MAT::Node* node, std::unordered_map<int, uint8_t>& output,
     }
 }
 
+// Entry Point
 void assign_descendant_muts(MAT::Tree &in) {
     std::unordered_map<int, uint8_t> ignore;
     tf::Executor executor;
     tf::Taskflow taskflow;
+    
     taskflow.emplace([&](tf::Subflow& subflow) {
-      build_task_graph(in.root, ignore, subflow);
+        build_task_graph(in.root, ignore, subflow);
     });
+    
     executor.run(taskflow).wait(); 
 }
