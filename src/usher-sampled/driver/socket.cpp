@@ -284,6 +284,12 @@ std::string get_options(FILE *f, Leader_Thread_Options &options,std::string& ext
         "extract from existing samples")
         ("run-ripples", po::bool_switch(&options.run_ripples)->default_value(false),
         "After placing samples, run ripples to search for evidence of recombination")
+        ("ripples-branch-len,b", po::value<uint32_t>(&options.ripples_branch_len)->default_value(2),
+        "Minimum branch length for a node to be considered as a potential recombinant node in ripples")
+        ("ripples-num-desc,n", po::value<uint32_t>(&options.ripples_num_desc)->default_value(5),
+        "Minimum number of descendant samples for a node to be considered as a potential recombinant node in ripples")
+        ("ripples-ancestor-radius,a", po::value<uint32_t>(&options.ripples_ancestor_radius)->default_value(3),
+        "Number of ancestral nodes to search through in ripples when identifying potential recombinant nodes")
         ("anchor_samples", po::value<std::string>(&options.out_options.anchor_samples_file),
          "add samples from file to generated subtree(s)")
         (
@@ -502,10 +508,9 @@ static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
 
         if (options.run_ripples) {
             // RIPPLES SERVER INTEGRATION
-            //TODO: Set ripples server parameters
-            uint32_t branch_len = 2;
-            uint32_t num_desc = 5;
-            uint32_t ancestor_radius = 3;
+            uint32_t branch_len = options.ripples_branch_len;
+            uint32_t num_desc = options.ripples_num_desc;
+            uint32_t ancestor_radius = options.ripples_ancestor_radius;
             std::string outdir = options.out_options.outdir;
             tree.uncondense_leaves();
             ripples::server::runner ripples_runner(tree, samples_to_place);
