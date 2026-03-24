@@ -239,6 +239,9 @@ ripples::server::MATCopyHelper::copy_to_mat_parallel(
                          matoptimize_curr->mutations.mutations) {
                         new_node->mutations.emplace_back(copy_mutation(mut));
                     }
+                    // Copy clade annotations
+                    new_node->clade_annotations =
+                        matoptimize_curr->clade_annotations;
                 }
             },
             ap);
