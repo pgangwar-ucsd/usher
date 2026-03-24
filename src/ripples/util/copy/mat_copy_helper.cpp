@@ -163,19 +163,13 @@ ripples::server::MATCopyHelper::copy_root(
                                  tree.root->level);
 }
 
-std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat_parallel(
+ripples::server::MATCopyHelper::Result
+ripples::server::MATCopyHelper::copy_to_mat_parallel(
     std::vector<MAT::Node> &storage, uint32_t num_threads) const {
-
     if (num_nodes == 0) {
-        std::cerr << "MatOptimize Tree is empty!\n";
-        return std::nullopt;
+        return std::make_pair(std::nullopt, Status{error_t::EMPTY_TREE});
     }
     storage.reserve(num_nodes);
-
-    tbb::global_control global_limit(
-        tbb::global_control::max_allowed_parallelism, num_threads);
-    srand(time(NULL));
-    static tbb::affinity_partitioner ap;
 
     Timer timer;
     timer.Start();
@@ -196,7 +190,7 @@ std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat_parallel(
     // Copy and update root node in new tree
     auto new_root_opt = copy_root(tree.root, storage);
     if (!new_root_opt) {
-        return std::nullopt;
+        return std::make_pair(std::nullopt, Status{error_t::ROOT_NOT_FOUND});
     }
     auto *new_root = new_root_opt.value();
     copied_tree.root = new_root;
@@ -211,6 +205,7 @@ std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat_parallel(
 
     using all_nodes_t = std::unordered_map<std::string, MAT::Node *>;
     tbb::enumerable_thread_specific<all_nodes_t> local_all_nodes_maps;
+    static tbb::affinity_partitioner ap;
 
     // Start from level 1 (root children) and work down to tip samples level
     while (!current_level.empty()) {
@@ -245,7 +240,8 @@ std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat_parallel(
                         new_node->mutations.emplace_back(copy_mutation(mut));
                     }
                 }
-            });
+            },
+            ap);
 
         // Serially add children nodes to parent, and setup next level
         for (size_t i = 0; i < current_level_size; ++i) {
@@ -258,7 +254,7 @@ std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat_parallel(
             }
         }
 
-        // Merge thread local all nodes maps merging into global all nodes map
+        // Merge all thread local maps into global all_nodes map
         for (auto &local_map : local_all_nodes_maps) {
             all_nodes.merge(local_map);
             local_map.clear();
@@ -275,6 +271,7 @@ std::optional<MAT::Tree> ripples::server::MATCopyHelper::copy_to_mat_parallel(
               << "\n";
     std::cerr << "New Root Children: " << copied_tree.root->children.size()
               << "\n";
-    return std::make_optional<MAT::Tree>(copied_tree);
+    return std::make_pair(std::make_optional<MAT::Tree>(copied_tree),
+                          error_t::NO_ERROR);
 }
 

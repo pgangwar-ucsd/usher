@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ripples_runner.hpp"
-#include "ripples_server_util.hpp"
 
 namespace ripples::server {
 
@@ -12,7 +11,7 @@ class runner {
 
     runner(InputTree &tree, const MissingSamples &missing_samples);
 
-    bool operator()(const ripples_parameters &params);
+    Status operator()(const ripples_parameters &params);
 
   private:
     MATProxy<InputTree> proxy_tree_;

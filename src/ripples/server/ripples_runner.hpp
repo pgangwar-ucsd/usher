@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/ripples/ripples_fast/ripples_util.hpp"
+#include "src/ripples/server/ripples_server_util.hpp"
 #include "src/usher_graph.hpp"
 #include "tbb/concurrent_unordered_set.h"
 #include <array>
@@ -28,7 +29,7 @@ struct ripples_runner {
           branch_len_(params.branch_len), num_desc_(params.num_desc),
           ancestor_radius_(params.ancestor_radius), outdir_(params.outdir) {}
 
-    bool operator()() {
+    Status operator()() {
         // TODO: Unused constant parameters
         int start_idx = -1;
         int end_idx = -1;
@@ -38,14 +39,8 @@ struct ripples_runner {
 
         Timer timer;
 
-        tbb::global_control global_limit(
-            tbb::global_control::max_allowed_parallelism, num_threads_);
-        srand(time(NULL));
-        static tbb::affinity_partitioner ap;
-
         T.uncondense_leaves();
         timer.Start();
-
         auto passing_ripples_filter = [&tree = T, bl = branch_len_,
                                        desc = num_desc_](MAT::Node *node) {
             if (node->mutations.size() >= bl &&
@@ -181,7 +176,7 @@ struct ripples_runner {
         fclose(recomb_file);
 
         fprintf(stderr, "Completed in %ld msec \n\n", timer.Stop());
-        return true;
+        return Status{error_t::NO_ERROR};
     }
 
     MAT::Tree &T;
