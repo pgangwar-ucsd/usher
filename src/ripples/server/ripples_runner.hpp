@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/ripples/ripples_fast/ripples_util.hpp"
-#include "src/ripples/server/ripples_server_util.hpp"
+#include "src/ripples/util/status.hpp"
 #include "src/usher_graph.hpp"
 #include "tbb/concurrent_unordered_set.h"
 #include <array>

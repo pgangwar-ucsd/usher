@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ripples_runner.hpp"
+#include "ripples_server_util.hpp"
 
 namespace ripples::server {
 
