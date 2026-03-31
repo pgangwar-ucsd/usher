@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 namespace ripples::server {
 
 enum class error_t : unsigned int {
@@ -10,9 +12,18 @@ enum class error_t : unsigned int {
     NODE_ID_NOT_FOUND = 4,
 };
 
+static constexpr std::array<const char *, 5> ERROR_MSGS{
+    "ripples: success", "ripples: input tree is empty",
+    "ripples: input tree root not found", "ripples: node name not found",
+    "ripples: node id not found"};
+
 struct Status {
     Status(error_t err) : error(err) {}
     operator bool() const { return error == error_t::NO_ERROR; }
+
+    const char *msg() const {
+        return ERROR_MSGS[static_cast<std::underlying_type_t<error_t>>(error)];
+    }
 
     error_t error;
 };

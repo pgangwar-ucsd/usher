@@ -515,9 +515,9 @@ static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
             tree.uncondense_leaves();
             ripples::server::runner ripples_runner(tree, samples_to_place);
             ripples::server::ripples_parameters params{branch_len, num_desc, ancestor_radius, num_threads, outdir};
-            [[maybe_unused]] auto status = ripples_runner(params);
+            auto status = ripples_runner(params);
             if (!status) {
-                // TODO: Handle. Use status.error to get specific error_t enum type
+                fputs(status.msg(), f);
             }
         }
 

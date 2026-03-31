@@ -250,6 +250,11 @@ ripples::server::MATCopyHelper::copy_to_mat_parallel(
         for (size_t i = 0; i < current_level_size; ++i) {
             auto [matoptimize_node, mat_parent] = current_level[i];
             auto *copied_node = &storage[level_offset + i];
+            // Check if node name exists and was copied correctly
+            if (copied_node->identifier.empty()) {
+                return std::make_pair(std::nullopt,
+                                      Status{error_t::NODE_NAME_NOT_FOUND});
+            }
             // Link to parent
             mat_parent->children.push_back(copied_node);
             for (auto *child : matoptimize_node->children) {
