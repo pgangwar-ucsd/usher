@@ -45,7 +45,8 @@ int main (int argc, char** argv){
             "usage: client-example socket_file samples.vcf tree.pb out_dir"
             " [--run-ripples"
             " [--ripples-branch-len <N>]"
-            " [--ripples-num-desc <N>]"
+            " [--ripples-num-desc-search <N>]"
+            " [--ripples-num-desc-recomb <N>]"
             " [--ripples-ancestor-radius <N>]]\n");
         exit(1);
     }
@@ -53,6 +54,7 @@ int main (int argc, char** argv){
     int run_ripples = 0;
     char *branch_len_val   = NULL;
     char *num_desc_val     = NULL;
+    char *num_recomb_desc_val     = NULL;
     char *ancestor_rad_val = NULL;
 
     for (int i = 5; i < argc; i++) {
@@ -60,8 +62,10 @@ int main (int argc, char** argv){
             run_ripples = 1;
         } else if ((strcmp(argv[i], "--ripples-branch-len") == 0 || strcmp(argv[i], "-b") == 0) && i + 1 < argc) {
             branch_len_val = argv[++i];
-        } else if ((strcmp(argv[i], "--ripples-num-desc") == 0 || strcmp(argv[i], "-n") == 0) && i + 1 < argc) {
+        } else if ((strcmp(argv[i], "--ripples-num-desc-search") == 0 || strcmp(argv[i], "-n") == 0) && i + 1 < argc) {
             num_desc_val = argv[++i];
+        } else if ((strcmp(argv[i], "--ripples-num-desc-recomb") == 0) && i + 1 < argc) {
+            num_recomb_desc_val = argv[++i];
         } else if ((strcmp(argv[i], "--ripples-ancestor-radius") == 0 || strcmp(argv[i], "-a") == 0) && i + 1 < argc) {
             ancestor_rad_val = argv[++i];
         } else {
@@ -91,8 +95,12 @@ int main (int argc, char** argv){
             cmd_ripples[n++] = branch_len_val;
         }
         if (num_desc_val) {
-            cmd_ripples[n++] = "--ripples-num-desc";
+            cmd_ripples[n++] = "--ripples-num-desc-search";
             cmd_ripples[n++] = num_desc_val;
+        }
+        if (num_recomb_desc_val) {
+            cmd_ripples[n++] = "--ripples-num-desc-recomb";
+            cmd_ripples[n++] = num_recomb_desc_val;
         }
         if (ancestor_rad_val) {
             cmd_ripples[n++] = "--ripples-ancestor-radius";

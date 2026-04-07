@@ -16,7 +16,8 @@ namespace ripples::server {
 
 struct ripples_parameters {
     uint32_t branch_len;
-    uint32_t num_desc;
+    uint32_t num_desc_search;
+    uint32_t num_desc_recomb;
     uint32_t ancestor_radius;
     uint32_t num_threads;
     std::string outdir;
@@ -26,7 +27,9 @@ struct ripples_runner {
     ripples_runner(MAT::Tree &tree, const std::vector<Missing_Sample> &samples,
                    const ripples_parameters &params)
         : T(tree), samples_(samples), num_threads_(params.num_threads),
-          branch_len_(params.branch_len), num_desc_(params.num_desc),
+          branch_len_(params.branch_len),
+          num_desc_search_(params.num_desc_search),
+          num_desc_recomb_(params.num_desc_recomb),
           ancestor_radius_(params.ancestor_radius), outdir_(params.outdir) {}
 
     Status operator()() {
@@ -42,13 +45,22 @@ struct ripples_runner {
         T.uncondense_leaves();
         timer.Start();
         auto passing_ripples_filter = [&tree = T, bl = branch_len_,
-                                       desc = num_desc_](MAT::Node *node) {
+                                       desc =
+                                           num_desc_recomb_](MAT::Node *node) {
             if (node->mutations.size() >= bl &&
                 tree.get_num_leaves(node) >= desc) {
                 return true;
             }
             return false;
         };
+
+        // TESTING, REMOVE
+        std::cerr << "------------RIPPLES PARAMETERS------------\n";
+        std::cerr << "Min Branch length: " << branch_len_ << '\n';
+        std::cerr << "Min Num Desc Search: " << num_desc_search_ << '\n';
+        std::cerr << "Min Num Desc Recomb: " << num_desc_recomb_ << '\n';
+        std::cerr << "Ancestor Radius: " << ancestor_radius_ << '\n';
+        std::cerr << "------------------------------------------\n";
 
         tbb::concurrent_unordered_set<MAT::Node *, idx_hash, idx_eq>
             nodes_to_consider;
@@ -111,7 +123,7 @@ struct ripples_runner {
         std::vector<MAT::Node *> nodes_to_search;
         nodes_to_search.reserve(dfs.size());
         for (auto &node : dfs) {
-            if ((node->dfs_end_idx - node->dfs_idx) >= num_desc_) {
+            if ((node->dfs_end_idx - node->dfs_idx) >= num_desc_search_) {
                 nodes_to_search.push_back(node);
             }
         }
@@ -119,8 +131,8 @@ struct ripples_runner {
         std::vector<Mapper_Info> traversal_track;
         unsigned short tree_height = 0;
         check_parallelizable(T.root, do_parallel,
-                             nodes_to_search.size() / num_threads_, num_desc_,
-                             tree_height, traversal_track, 0);
+                             nodes_to_search.size() / num_threads_,
+                             num_desc_search_, tree_height, traversal_track, 0);
         std::vector<int> index_map;
         int node_to_search_idx = 0;
         index_map.reserve(dfs.size());
@@ -183,7 +195,9 @@ struct ripples_runner {
     const std::vector<Missing_Sample> &samples_;
     uint32_t num_threads_;
     uint32_t branch_len_;
-    uint32_t num_desc_;
+    uint32_t num_desc_search_;
+    uint32_t num_desc_recomb_;
+
     uint32_t ancestor_radius_;
     std::string outdir_;
 };

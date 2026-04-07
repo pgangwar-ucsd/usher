@@ -148,7 +148,8 @@ struct Leader_Thread_Options {
     std::string reference_file_name;
     bool run_ripples;
     uint32_t ripples_branch_len;
-    uint32_t ripples_num_desc;
+    uint32_t ripples_num_desc_recomb;
+    uint32_t ripples_num_desc_search;
     uint32_t ripples_ancestor_radius;
 };
 int set_descendant_count(MatOptimize::MAT::Node* root);
