@@ -1,7 +1,7 @@
 #include "ripples_server_util.hpp"
 #include <iostream>
 
-std::optional<std::vector<std::string>>
+std::pair<std::optional<std::vector<std::string>>, std::string>
 ripples::server::get_missing_sample_names(
     const MatOptimize::MAT::Tree &tree,
     const std::vector<Sample_Muts> &missing_samples) {
@@ -13,13 +13,13 @@ ripples::server::get_missing_sample_names(
         if (name.empty()) {
             std::cerr << "[Error] Node id " << sample.sample_idx
                       << " not found in tree\n";
-            return std::nullopt;
+            return std::make_pair(std::nullopt, std::to_string(sample.sample_idx));
         }
     }
-    return missing_sample_names;
+    return std::make_pair(missing_sample_names, "");
 }
 
-std::optional<std::vector<Missing_Sample>>
+std::pair<std::optional<std::vector<Missing_Sample>>, std::string>
 ripples::server::collect_missing_samples(
     const ripples::server::MAT::Tree &tree,
     const std::vector<std::string> &missing_sample_names) {
@@ -29,7 +29,7 @@ ripples::server::collect_missing_samples(
         auto &sample = missing_samples.emplace_back(Missing_Sample(name));
         const auto *node = tree.get_node(name);
         if (!node) {
-            return std::nullopt;
+            return std::make_pair(std::nullopt, name);
         }
         sample.mutations = node->mutations;
     }
@@ -38,6 +38,6 @@ ripples::server::collect_missing_samples(
     // - best_clade_assignment
     // - clade_assignments
     // - num_ambiguous is set to 0 by Missing_Sample constructor
-    return missing_samples;
+    return std::make_pair(missing_samples, "");
 }
 

@@ -19,15 +19,16 @@ ripples::server::runner::operator()(const ripples_parameters &params) {
     // Build Missing_Sample vector required by ripples from the names of
     // missing samples, and collect mutations from copied MAT tree
     // ie) basically copy from (vector<Sample_Muts>) to vector<Missing_Sample>
-    auto missing_names =
+    auto [missing_names, error_node_id] =
         get_missing_sample_names(proxy_tree_.data(), missing_samples_);
     if (!missing_names) {
-        return Status{error_t::NODE_ID_NOT_FOUND};
+        return Status(error_t::NODE_ID_NOT_FOUND, error_node_id);
     }
-    auto missing_samples =
+
+    auto [missing_samples, error_node_name] =
         collect_missing_samples(copied_tree, missing_names.value());
     if (!missing_samples) {
-        return Status{error_t::NODE_NAME_NOT_FOUND};
+        return Status(error_t::NODE_NAME_NOT_FOUND, error_node_name);
     }
 
     // Run ripples
