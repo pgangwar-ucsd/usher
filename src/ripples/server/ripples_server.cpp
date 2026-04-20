@@ -1,4 +1,5 @@
 #include "ripples_server.hpp"
+#include "src/ripples/post_filtration/post_filtration.hpp"
 #include <iostream>
 
 ripples::server::runner::runner(
@@ -9,10 +10,10 @@ ripples::server::runner::runner(
 ripples::server::Status
 ripples::server::runner::operator()(const ripples_parameters &params) {
     // Copy OptimizeMAT::MAT::Tree to MAT::Tree
-    auto [opt_copied_tree, status] =
+    auto [opt_copied_tree, copied_tree_status] =
         proxy_tree_.clone(storage_, params.num_threads);
     if (!opt_copied_tree) {
-        return status;
+        return copied_tree_status;
     }
     auto &copied_tree = opt_copied_tree.value();
 
@@ -31,9 +32,19 @@ ripples::server::runner::operator()(const ripples_parameters &params) {
         return Status(error_t::NODE_NAME_NOT_FOUND, error_node_name);
     }
 
-    // Run ripples
+    // Run ripples-fast
     ripples::server::ripples_runner runner(copied_tree, missing_samples.value(),
                                            params);
-    return runner();
+    auto status = runner();
+    if (!status) {
+        return status;
+    }
+
+    // Run ripples post-filtration
+    auto recomb_filename = params.outdir + "/recombination.tsv";
+    ripples::filtration::post_filtration filtration(copied_tree,
+                                                    recomb_filename);
+    const std::string outfile = params.outdir + "/final_recombination.tsv";
+    return filtration.write(outfile);
 }
 

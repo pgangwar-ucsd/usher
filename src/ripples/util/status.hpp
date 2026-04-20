@@ -11,12 +11,16 @@ enum class error_t : unsigned int {
     ROOT_NOT_FOUND = 2,
     NODE_NAME_NOT_FOUND = 3,
     NODE_ID_NOT_FOUND = 4,
+    CANNOT_OPEN_LOG = 5
 };
 
-static const std::array<std::string, 5> ERROR_MSGS{
-    "ripples: success", "ripples: input tree is empty",
-    "ripples: input tree root not found", "ripples: node name %1% not found",
-    "ripples: node id %1% not found"};
+static const std::array<std::string, 6> ERROR_MSGS{
+    "ripples: success",
+    "ripples: input tree is empty",
+    "ripples: input tree root not found",
+    "ripples: node name %1% not found",
+    "ripples: node id %1% not found",
+    "ripples: unable to open final results output file"};
 
 inline static std::string get_error(error_t err) {
     return std::string{
