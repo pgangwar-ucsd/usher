@@ -5,8 +5,6 @@ ripples::filtration::recomb_writer::recomb_writer(
     : tree_(tree), log_(outfilepath) {}
 
 void ripples::filtration::recomb_writer::write(const recombinant &recomb) {
-    log_ << HEADER;
-
     const auto &[recomb_clade, recomb_lineage] =
         recomb.get_clade_assignments(tree_);
     const auto &[donor_clade, donor_lineage] =
@@ -31,7 +29,7 @@ ripples::server::Status ripples::filtration::recomb_writer::write(
     if (!log_.is_open()) {
         return Status{ripples::server::error_t::CANNOT_OPEN_LOG};
     }
-
+    log_ << HEADER;
     for (const auto &recomb : candidates) {
         write(recomb);
     }
