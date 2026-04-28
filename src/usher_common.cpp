@@ -106,8 +106,13 @@ int usher_common(std::string dout_filename, std::string outdir, uint32_t max_tre
     // Tree pointer to point to some element in optimal_trees that would be
     // updated several times during the execution
 
-    optimal_trees.emplace_back(std::move(*loaded_MAT));
+    optimal_trees.push_back(std::move(*loaded_MAT));
     MAT::Tree* T = &optimal_trees[0];
+    auto sync_loaded_mat = [&]() {
+        if ((loaded_MAT != NULL) && !optimal_trees.empty()) {
+            *loaded_MAT = std::move(optimal_trees[0]);
+        }
+    };
     // Since --multiple-placements can result in trees with different parsimony
     // scores, the vector below will be used to maintain the final parsimony
     // score of each tree
@@ -801,6 +806,7 @@ int usher_common(std::string dout_filename, std::string outdir, uint32_t max_tre
         if (parsimony_scores_file) {
             fclose(parsimony_scores_file);
         }
+        sync_loaded_mat();
         return 0;
     }
 
@@ -1069,5 +1075,6 @@ int usher_common(std::string dout_filename, std::string outdir, uint32_t max_tre
     Instrumentor::Get().EndSession();
 #endif
 
+    sync_loaded_mat();
     return 0;
 }
