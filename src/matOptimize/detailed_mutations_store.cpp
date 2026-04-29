@@ -17,7 +17,7 @@ repeated node messages (node in mutation_detailed.proto), one message for each
 node in the tree, each contain the offset and size of its children metadata
 message (meta in mutation_detailed.proto), contain offset and size of root node
 */
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 size_t get_memory() {
     struct rusage usage;
     getrusage(RUSAGE_SELF, &usage);

@@ -50,7 +50,7 @@ class Min_Back_Mut_FS_Score_PerNode_Choice {
         return default_nuc;
     }
 };
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 typedef std::vector<std::pair<long, nuc_one_hot>> mutated_t;
 void find_best_child_nuc(Min_Back_Mut_FS_Score_PerNode_T &child_score_output,
                          int this_nuc_idx, int &best_child_nuc,

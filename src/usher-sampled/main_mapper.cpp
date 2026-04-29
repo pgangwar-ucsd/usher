@@ -23,16 +23,16 @@ template <typename Hook1, typename Hook2> struct Combine_Hook {
         hook1.sample_mut_only(mut);
         hook2.sample_mut_only(mut);
     }
-    void target_node_only(const MAT::Mutation &mut) {
+    void target_node_only(const MatOptimize::MAT::Mutation &mut) {
         hook1.target_node_only(mut);
         hook2.target_node_only(mut);
     }
-    void target_N_skiped(const MAT::Mutation &mut) {
+    void target_N_skiped(const MatOptimize::MAT::Mutation &mut) {
         hook1.target_N_skiped(mut);
         hook2.target_N_skiped(mut);
     }
     void both(const To_Place_Sample_Mutation &sample_mut,
-              const MAT::Mutation &target_mut) {
+              const MatOptimize::MAT::Mutation &target_mut) {
         hook1.both(sample_mut, target_mut);
         hook2.both(sample_mut, target_mut);
     }
@@ -40,15 +40,15 @@ template <typename Hook1, typename Hook2> struct Combine_Hook {
 struct Empty_Hook {
     void reserve(size_t sample_mutation_count, size_t target_mutation_count) {}
     void sample_mut_only(const To_Place_Sample_Mutation &mut) {}
-    void target_node_only(const MAT::Mutation &mut) {}
-    void target_N_skiped(const MAT::Mutation &mut) {}
-    void both(const To_Place_Sample_Mutation &mut, const MAT::Mutation &mut2) {}
+    void target_node_only(const MatOptimize::MAT::Mutation &mut) {}
+    void target_N_skiped(const MatOptimize::MAT::Mutation &mut) {}
+    void both(const To_Place_Sample_Mutation &mut, const MatOptimize::MAT::Mutation &mut2) {}
 };
 static void insert_split(const To_Place_Sample_Mutation &sample_mut,
-                         const MAT::Mutation &target_mut,
+                         const MatOptimize::MAT::Mutation &target_mut,
                          std::vector<To_Place_Sample_Mutation> &sample_mutations,
-                         MAT::Mutations_Collection &splitted_mutations,
-                         MAT::Mutations_Collection &shared_mutations) {
+                         MatOptimize::MAT::Mutations_Collection &splitted_mutations,
+                         MatOptimize::MAT::Mutations_Collection &shared_mutations) {
     auto par_nuc = target_mut.get_par_one_hot();
     auto sample_nuc = sample_mut.mut_nuc;
     auto target_nuc = target_mut.get_mut_one_hot();
@@ -74,9 +74,9 @@ static void insert_split(const To_Place_Sample_Mutation &sample_mut,
     }
 }
 static void n_skiped_sibling(
-    MAT::Mutations_Collection &splitted_mutations,
-    MAT::Mutations_Collection &shared_mutations,
-    const MAT::Mutation &mut
+    MatOptimize::MAT::Mutations_Collection &splitted_mutations,
+    MatOptimize::MAT::Mutations_Collection &shared_mutations,
+    const MatOptimize::MAT::Mutation &mut
 ) {
     assert(mut.get_mut_one_hot() != mut.get_par_one_hot());
     if(__builtin_popcount(mut.get_mut_one_hot())==1) {
@@ -87,7 +87,7 @@ static void n_skiped_sibling(
     if (!concensus_mut) {
         concensus_mut=1<<__builtin_ctz(mut.get_mut_one_hot());
         assert(shared_mutations.empty()||shared_mutations.back().get_position()<mut.get_position());
-        shared_mutations.push_back(MAT::Mutation(mut.get_chromIdx(),mut.get_position(),mut.get_par_one_hot(),concensus_mut));
+        shared_mutations.push_back(MatOptimize::MAT::Mutation(mut.get_chromIdx(),mut.get_position(),mut.get_par_one_hot(),concensus_mut));
         shared_mutations.back().set_descendant_mut(mut.get_descendant_mut());
         assert(shared_mutations.back().get_descendant_mut()&shared_mutations.back().get_mut_one_hot());
     }
@@ -97,8 +97,8 @@ static void n_skiped_sibling(
 }
 static void sample_check_mutation(
     const std::vector<To_Place_Sample_Mutation> &sample_mutations,
-    const MAT::Mutations_Collection &splitted_mutations,
-    const MAT::Mutations_Collection &shared_mutations,
+    const MatOptimize::MAT::Mutations_Collection &splitted_mutations,
+    const MatOptimize::MAT::Mutations_Collection &shared_mutations,
     int position
 ) {
 #ifdef DETAILED_MERGER_CHECK
@@ -109,8 +109,8 @@ static void sample_check_mutation(
 }
 static void sample_mut_check_mutation(
     const std::vector<To_Place_Sample_Mutation> &sample_mutations,
-    const MAT::Mutations_Collection &splitted_mutations,
-    const MAT::Mutations_Collection &shared_mutations,
+    const MatOptimize::MAT::Mutations_Collection &splitted_mutations,
+    const MatOptimize::MAT::Mutations_Collection &shared_mutations,
     const To_Place_Sample_Mutation& mut
 ) {
 #ifdef DETAILED_MERGER_CHECK
@@ -121,8 +121,8 @@ static void sample_mut_check_mutation(
 }
 struct Down_Sibling_Hook {
     std::vector<To_Place_Sample_Mutation> &sample_mutations;
-    MAT::Mutations_Collection &splitted_mutations;
-    MAT::Mutations_Collection &shared_mutations;
+    MatOptimize::MAT::Mutations_Collection &splitted_mutations;
+    MatOptimize::MAT::Mutations_Collection &shared_mutations;
     int &parsimony_score;
     Down_Sibling_Hook(Main_Tree_Target &target, int &parsimony_score)
         : sample_mutations(target.sample_mutations),
@@ -149,17 +149,17 @@ struct Down_Sibling_Hook {
             }
         }
     }
-    void target_node_only(const MAT::Mutation &mut) {
+    void target_node_only(const MatOptimize::MAT::Mutation &mut) {
         sample_check_mutation(sample_mutations, splitted_mutations, shared_mutations, mut.get_position());
         assert(mut.get_mut_one_hot() != mut.get_par_one_hot());
         splitted_mutations.push_back(mut);
     }
-    void target_N_skiped(const MAT::Mutation &mut) {
+    void target_N_skiped(const MatOptimize::MAT::Mutation &mut) {
         sample_check_mutation(sample_mutations, splitted_mutations, shared_mutations, mut.get_position());
         n_skiped_sibling(splitted_mutations, shared_mutations, mut);
     }
     void both(const To_Place_Sample_Mutation &sample_mut,
-              const MAT::Mutation &target_mut) {
+              const MatOptimize::MAT::Mutation &target_mut) {
         /*if (sample_mut.get_position()==241) {
             fputc('a', stderr);
         }*/
@@ -230,9 +230,9 @@ struct Down_Decendant_Hook {
             }
         }
     }
-    void target_N_skiped(const MAT::Mutation &mut) {
+    void target_N_skiped(const MatOptimize::MAT::Mutation &mut) {
     }
-    void target_node_only(const MAT::Mutation &mut) {
+    void target_node_only(const MatOptimize::MAT::Mutation &mut) {
         assert(!(mut.get_mut_one_hot() & mut.get_par_one_hot()));
         assert(muts.empty()||muts.back().position<mut.get_position());
         muts.push_back(To_Place_Sample_Mutation(mut.get_position(),mut.get_chromIdx(),mut.get_par_one_hot(),mut.get_mut_one_hot(),mut.get_descendant_mut()));
@@ -242,7 +242,7 @@ struct Down_Decendant_Hook {
         }
     }
     void both(const To_Place_Sample_Mutation &sample_mut,
-              const MAT::Mutation &target_mut) {
+              const MatOptimize::MAT::Mutation &target_mut) {
         /*if (sample_mut.get_position()==241) {
             fputc('a', stderr);
         }*/
@@ -264,7 +264,7 @@ struct Down_Decendant_Hook {
 };
 
 template <typename Hook>
-static void generic_merge(const MAT::Node *node,
+static void generic_merge(const MatOptimize::MAT::Node *node,
                           const std::vector<To_Place_Sample_Mutation> &par_mutations,
                           Hook hook) {
     hook.reserve(par_mutations.size(), node->mutations.size());
@@ -327,11 +327,11 @@ void register_target(Main_Tree_Target &target, int this_score,Output<Main_Tree_T
         }
     }
 }
-static void search_serial(const MAT::Node* node,std::vector<To_Place_Sample_Mutation>& this_muts,Output<Main_Tree_Target> &output) {
+static void search_serial(const MatOptimize::MAT::Node* node,std::vector<To_Place_Sample_Mutation>& this_muts,Output<Main_Tree_Target> &output) {
     Main_Tree_Target target;
     for (const auto child : node->children) {
         target.target_node = child;
-        target.parent_node = const_cast<MAT::Node *>(node);
+        target.parent_node = const_cast<MatOptimize::MAT::Node *>(node);
         int parsimony_score = 0;
         if (child->is_leaf()) {
             generic_merge(child, this_muts,
@@ -373,12 +373,12 @@ static void search_serial(const MAT::Node* node,std::vector<To_Place_Sample_Muta
 struct Main_Tree_Searcher {
     int curr_lower_bound;
     std::vector<To_Place_Sample_Mutation> this_muts;
-    const MAT::Node *node;
+    const MatOptimize::MAT::Node *node;
     Output<Main_Tree_Target> &output;
 #ifdef DETAILED_MERGER_CHECK
     Mutation_Set &sample_mutations;
 #endif
-    Main_Tree_Searcher(int curr_lower_bound, const MAT::Node *node,
+    Main_Tree_Searcher(int curr_lower_bound, const MatOptimize::MAT::Node *node,
                        Output<Main_Tree_Target> &output
 #ifdef DETAILED_MERGER_CHECK
                        ,
@@ -410,7 +410,7 @@ struct Main_Tree_Searcher {
         Main_Tree_Target target;
         for (const auto child : node->children) {
             target.target_node = child;
-            target.parent_node = const_cast<MAT::Node *>(node);
+            target.parent_node = const_cast<MatOptimize::MAT::Node *>(node);
             int parsimony_score = 0;
             if (child->is_leaf()) {
                 generic_merge(child, this_muts,
@@ -464,7 +464,7 @@ struct Main_Tree_Searcher {
 
 std::tuple<std::vector<Main_Tree_Target>, int>
 place_main_tree(const std::vector<To_Place_Sample_Mutation> &mutations,
-                MAT::Tree &main_tree
+                MatOptimize::MAT::Tree &main_tree
 #ifdef DETAILED_MERGER_CHECK
                 ,
                 Mutation_Set &sample_mutations
@@ -476,7 +476,7 @@ place_main_tree(const std::vector<To_Place_Sample_Mutation> &mutations,
     To_Place_Sample_Mutation temp(INT_MAX,0,0xf);
     Main_Tree_Target target;
     target.target_node=main_tree.root;
-    target.parent_node=(MAT::Node*)main_tree.root_ident;
+    target.parent_node=(MatOptimize::MAT::Node*)main_tree.root_ident;
     if (!target.parent_node) {
         raise(SIGTRAP);
     }

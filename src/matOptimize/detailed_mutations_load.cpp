@@ -11,7 +11,8 @@
 #include <thread>
 #include <unistd.h>
 #include <utility>
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
+using namespace MatOptimize;
 // mapping between chromosome string and chromosome index
 static void load_chrom_vector(const Mutation_Detailed::meta &to_load) {
     size_t chrom_size = to_load.chromosomes_size();

@@ -1,6 +1,6 @@
 #include "mutation_annotated_tree.hpp"
 #include <cstdio>
-int8_t Mutation_Annotated_Tree::get_nuc_id(char nuc) {
+int8_t MatOptimize::Mutation_Annotated_Tree::get_nuc_id(char nuc) {
     int8_t ret = 0b1111;
     switch(nuc) {
     case 'a':
@@ -74,7 +74,7 @@ int8_t Mutation_Annotated_Tree::get_nuc_id(char nuc) {
 }
 
 // Sets bits at positions specified by nuc_vec to 1 in int8
-int8_t Mutation_Annotated_Tree::get_nuc_id (std::vector<int8_t> nuc_vec) {
+int8_t MatOptimize::Mutation_Annotated_Tree::get_nuc_id (std::vector<int8_t> nuc_vec) {
     int8_t ret = 0;
     int8_t one = 1;
     for (auto nuc: nuc_vec) {
@@ -85,7 +85,7 @@ int8_t Mutation_Annotated_Tree::get_nuc_id (std::vector<int8_t> nuc_vec) {
 }
 
 // Convert nuc_id back to IUPAC base
-char Mutation_Annotated_Tree::get_nuc (int8_t nuc_id) {
+char MatOptimize::Mutation_Annotated_Tree::get_nuc (int8_t nuc_id) {
     char ret = 'N';
     //assert ((nuc_id >= 1) && (nuc_id <= 15));
     switch(nuc_id) {
@@ -139,7 +139,7 @@ char Mutation_Annotated_Tree::get_nuc (int8_t nuc_id) {
 }
 
 // A:0, C:1, G:2, T:3
-int8_t Mutation_Annotated_Tree::get_nt (int8_t nuc_id) {
+int8_t MatOptimize::Mutation_Annotated_Tree::get_nt (int8_t nuc_id) {
     int8_t ret = 0;
     switch(nuc_id) {
     case 1:
@@ -161,7 +161,7 @@ int8_t Mutation_Annotated_Tree::get_nt (int8_t nuc_id) {
     return ret;
 }
 
-std::vector<int8_t> Mutation_Annotated_Tree::get_nuc_vec (char c) {
+std::vector<int8_t> MatOptimize::Mutation_Annotated_Tree::get_nuc_vec (char c) {
     switch (c) {
     case 'a':
     case 'A':

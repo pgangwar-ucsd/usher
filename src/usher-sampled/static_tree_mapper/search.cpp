@@ -17,7 +17,7 @@
 #include "src/usher-sampled/mapper.hpp"
 #include "src/usher-sampled/place_sample.hpp"
 #define INDEX_END_POSITION INT_MAX
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 union fixed_tree_search_mutation {
     struct {
         int position;

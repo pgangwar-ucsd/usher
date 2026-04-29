@@ -228,15 +228,15 @@ struct gzip_input_source {
     }
 };
 typedef tbb::enumerable_thread_specific<
-std::vector<std::vector<MAT::Mutation>>>
+std::vector<std::vector<MatOptimize::MAT::Mutation>>>
 Sampled_Tree_Mutations_t;
 typedef std::vector<mutated_t> mut_container_t;
 // Parse a block of lines, assuming there is a complete line in the line_in
 // buffer
 typedef tbb::flow::function_node<line_start_later> line_parser_t;
 tbb::queuing_rw_mutex mutation_mutex;
-static void add_mutation(long output_idx, const MAT::Mutation &mut_template,
-                         std::vector<std::vector<MAT::Mutation>> &this_blk,
+static void add_mutation(long output_idx, const MatOptimize::MAT::Mutation &mut_template,
+                         std::vector<std::vector<MatOptimize::MAT::Mutation>> &this_blk,
                          mut_container_t &mutations_out,
                          size_t offset,uint8_t mut_nuc) {
     if (mutations_out.size()<mut_template.get_position()+1ul) {
@@ -247,7 +247,7 @@ static void add_mutation(long output_idx, const MAT::Mutation &mut_template,
         if (output_idx>=(long)this_blk.size()) {
             raise(SIGTRAP);
         }
-        MAT::Mutation this_mut(mut_template);
+        MatOptimize::MAT::Mutation this_mut(mut_template);
         this_mut.set_mut_one_hot(mut_nuc);
         this_mut.set_auxillary(mut_nuc, 0);
         this_mut.set_descendant_mut(mut_nuc);
@@ -306,14 +306,14 @@ struct line_parser {
             }
             line_in++;
             // REF
-            auto ref_nuc=MAT::get_nuc_id(*line_in);
-            MAT::Mutation mut_template(chromosome,pos, 0, ref_nuc, 0,ref_nuc);
+            auto ref_nuc=MatOptimize::MAT::get_nuc_id(*line_in);
+            MatOptimize::MAT::Mutation mut_template(chromosome,pos, 0, ref_nuc, 0,ref_nuc);
             line_in++;
             // assert(*line_in=='\t');
             line_in++;
             // ALT
             while (*line_in != '\t') {
-                allele_translated.push_back(MAT::get_nuc_id(*line_in));
+                allele_translated.push_back(MatOptimize::MAT::get_nuc_id(*line_in));
                 line_in++;
                 if (*line_in == ',') {
                     line_in++;
@@ -430,12 +430,12 @@ static line_start_later try_get_first_line(infile_t &f, size_t &size) {
 #define CHUNK_SIZ 200ul
 #define ONE_GB 0x4ffffffful
 #define ONE_MB 0xffffful
-static void map_names(MAT::Tree &tree,std::vector<Sample_Muts> &sample_mutations,std::vector<std::string>& sample_names) {
+static void map_names(MatOptimize::MAT::Tree &tree,std::vector<Sample_Muts> &sample_mutations,std::vector<std::string>& sample_names) {
     for (size_t idx=0; idx<sample_names.size(); idx++) {
         sample_mutations[idx].sample_idx=tree.map_samp_name_only(sample_names[idx]);
     }
 }
-static void add_sample_to_place(MAT::Tree &tree, std::string& name,
+static void add_sample_to_place(MatOptimize::MAT::Tree &tree, std::string& name,
 std::vector<long>& sample_idx,size_t field_idx, std::vector<Sample_Muts> &sample_mutations){
     auto new_samp_idx=tree.map_samp_name_only(name);
     sample_idx[field_idx] = sample_mutations.size();
@@ -444,7 +444,7 @@ std::vector<long>& sample_idx,size_t field_idx, std::vector<Sample_Muts> &sample
 }
 template <typename infile_t>
 static void process(infile_t &fd, std::vector<Sample_Muts> &sample_mutations,
-                    MAT::Tree &tree,mut_container_t& mutations_out,
+                    MatOptimize::MAT::Tree &tree,mut_container_t& mutations_out,
                     bool override,std::vector<std::string>& fields,
                     const std::unordered_set<std::string>& samples_in_condensed_nodes, std::string duplicate_prefix) {
     read_header(fd, fields);
@@ -481,8 +481,8 @@ static void process(infile_t &fd, std::vector<Sample_Muts> &sample_mutations,
             add_sample_to_place(tree, fields[field_idx], sample_idx, field_idx, sample_mutations);
         }
     }
-    mutations_out.resize(MAT::Mutation::refs.size());
-    if (MAT::Mutation::refs.size()==0) {
+    mutations_out.resize(MatOptimize::MAT::Mutation::refs.size());
+    if (MatOptimize::MAT::Mutation::refs.size()==0) {
         mutations_out.reserve(30000);
     }
     int offset=sample_mutations[0].sample_idx;
@@ -514,7 +514,7 @@ static void process(infile_t &fd, std::vector<Sample_Muts> &sample_mutations,
             for (const auto &one_thread : tree_mutations) {
                 mut_count += one_thread[idx].size();
             }
-            std::vector<MAT::Mutation> this_out;
+            std::vector<MatOptimize::MAT::Mutation> this_out;
             this_out.reserve(mut_count);
             for (auto &one_thread : tree_mutations) {
                 this_out.insert(this_out.end(), one_thread[idx].begin(),
@@ -526,7 +526,7 @@ static void process(infile_t &fd, std::vector<Sample_Muts> &sample_mutations,
     });
 }
 void Sample_Input(const char *name, std::vector<Sample_Muts> &sample_mutations,
-                  MAT::Tree &tree,mut_container_t& position_wise_out
+                  MatOptimize::MAT::Tree &tree,mut_container_t& position_wise_out
                   ,bool override,std::vector<std::string>& fields
                   ,const std::unordered_set<std::string>& samples_in_condensed_nodes,std::string duplicate_prefix) {
     assigned_count = 0;
@@ -552,19 +552,19 @@ static void load_reference(std::string fasta_fname){
     char* seq_name=nullptr;
     size_t seq_len=0;
     auto nchar=getline(&seq_name, &seq_len, fh);
-    MAT::Mutation::chromosomes.emplace_back(seq_name+1,seq_name+nchar-1);
-    MAT::Mutation::chromosome_map.emplace(MAT::Mutation::chromosomes[0],0);
+    MatOptimize::MAT::Mutation::chromosomes.emplace_back(seq_name+1,seq_name+nchar-1);
+    MatOptimize::MAT::Mutation::chromosome_map.emplace(MatOptimize::MAT::Mutation::chromosomes[0],0);
     free(seq_name);
     auto read=fgetc(fh);
-    MAT::Mutation::refs.clear();
-    MAT::Mutation::refs.push_back(0);
+    MatOptimize::MAT::Mutation::refs.clear();
+    MatOptimize::MAT::Mutation::refs.push_back(0);
     while (read!=EOF) {
         if (read!='\n') {
-            auto parsed_nuc=MAT::get_nuc_id(read);
+            auto parsed_nuc=MatOptimize::MAT::get_nuc_id(read);
             if (parsed_nuc==0xf) {
                 parsed_nuc=0;
             }
-            MAT::Mutation::refs.push_back(parsed_nuc);
+            MatOptimize::MAT::Mutation::refs.push_back(parsed_nuc);
         }
         read=fgetc(fh);
     }
@@ -572,10 +572,10 @@ static void load_reference(std::string fasta_fname){
 typedef std::vector<mutated_t> mut_container_t;
 void load_diff_for_usher(
     const char *input_path,std::vector<Sample_Muts>& all_samples,
-    mut_container_t& position_wise_out, MAT::Tree &tree, const std::string& fasta_fname,
+    mut_container_t& position_wise_out, MatOptimize::MAT::Tree &tree, const std::string& fasta_fname,
     std::vector<std::string> & samples) {
     load_reference(fasta_fname);
-    position_wise_out.resize(MAT::Mutation::refs.size());
+    position_wise_out.resize(MatOptimize::MAT::Mutation::refs.size());
     auto fh=fopen(input_path, "r");
     int read;
     int line_count=0;
@@ -609,7 +609,7 @@ void load_diff_for_usher(
             }
         }else {
             
-            auto parsed_nuc=MAT::get_nuc_id(read);
+            auto parsed_nuc=MatOptimize::MAT::get_nuc_id(read);
             if (parsed_nuc==0xf&&read!='n'&&read!='N'&&read!='-') {
                 fprintf(stderr, "at line %d\n",line_count);
                 raise(SIGTRAP);
@@ -641,7 +641,7 @@ void load_diff_for_usher(
                     }
             }else {
                 if(do_add){
-                    all_samples.back().muts.emplace_back(pos,0,parsed_nuc,MAT::Mutation::refs[pos]);
+                    all_samples.back().muts.emplace_back(pos,0,parsed_nuc,MatOptimize::MAT::Mutation::refs[pos]);
                 }
                 position_wise_out[pos].emplace_back(samp_idx,parsed_nuc);
             }

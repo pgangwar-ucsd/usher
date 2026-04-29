@@ -20,7 +20,7 @@
 void make_range_tree(const std::vector<MAT::Node *> &dfs_ordered_nodes,
                      tbb::concurrent_vector<node_info> &in, range_tree &out,
                      size_t idx);
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 short default_decrement_effect[4];
 short default_increment_effect[4];
 struct initer {

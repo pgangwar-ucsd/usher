@@ -24,7 +24,7 @@
 #include <sys/types.h>
 #include <signal.h>
 
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 struct Pos_Mut {
     int position;
     uint8_t mut;

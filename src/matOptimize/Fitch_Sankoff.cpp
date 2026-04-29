@@ -15,7 +15,7 @@
 #include <emmintrin.h>
 #include <smmintrin.h>
 #endif
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 //get state of ancestor at position
 nuc_one_hot get_this_state(MAT::Node* ancestor,int position) {
     auto iter = ancestor->mutations.find(position);
@@ -311,6 +311,8 @@ int FS_forward_assign_states_only(const std::vector<MAT::Node*>& bfs_ordered_nod
     return mutation_count;
 }
 #endif
+
+using namespace MatOptimize;
 void Fitch_Sankoff_Whole_Tree(const std::vector<backward_pass_range>& child_idx_range,const std::vector<forward_pass_range>& parent_idx,const MAT::Mutation & base,const mutated_t& mutated,Fitch_Sankoff_Out_Container& output,MAT::Tree* try_similar) {
 
     FS_backward_pass(child_idx_range,output.minor_major_allele,mutated,base.get_ref_one_hot());

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <unordered_map>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <stdio.h>
 #include <vector>
@@ -103,6 +104,7 @@ class Node {
     Node();
     Node(std::string id, float l);
     Node(std::string id, Node* p, float l);
+    explicit Node(std::string_view id, Node* p, float bl, size_t level);
 
     void add_mutation(Mutation mut);
     void clear_mutations();
@@ -114,13 +116,13 @@ class Tree {
   private:
     void remove_node_helper (std::string nid, bool move_level);
     void depth_first_expansion_helper(Node* node, std::vector<Node*>& vec) const;
-    std::unordered_map <std::string, Node*> all_nodes;
   public:
     Tree() {
         root = NULL;
         curr_internal_node = 0;
         all_nodes.clear();
     }
+    explicit Tree(size_t num_nodes);
 
     std::string new_internal_node_id() {
         return "node_" + std::to_string(++curr_internal_node);
@@ -130,6 +132,7 @@ class Tree {
     Node* root;
     tbb::concurrent_unordered_map<std::string, std::vector<std::string>> condensed_nodes;
     tbb::concurrent_unordered_set<std::string> condensed_leaves;
+    std::unordered_map <std::string, Node*> all_nodes;
 
     size_t curr_internal_node;
     size_t get_max_level () const;
@@ -144,6 +147,7 @@ class Tree {
     Node* get_node (std::string identifier) const;
     bool is_ancestor (std::string anc_id, std::string nid) const;
     std::vector<Node*> rsearch (const std::string& nid, bool include_self = false) const;
+    std::vector<Node*> rsearch (const std::string& nid, size_t radius, bool include_self = false) const;
     std::string get_clade_assignment (const Node* n, int clade_id, bool include_self = true) const;
     void remove_node (std::string nid, bool move_level);
     void remove_single_child_nodes();
@@ -158,6 +162,8 @@ class Tree {
     void collapse_tree();
     void rotate_for_display(bool reverse = false);
     void rotate_for_consistency();
+
+    std::unordered_map<std::string, Node*>& get_all_nodes();
 };
 
 std::string get_newick_string(const Tree& T, bool b1, bool b2, bool b3=false, bool b4=false);

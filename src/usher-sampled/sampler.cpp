@@ -8,7 +8,7 @@
 #include <taskflow/taskflow.hpp>
 #include <memory>
 
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 
 static void add_mut(std::unordered_map<int, uint8_t> &output,
                     const MAT::Mutation &mut) {

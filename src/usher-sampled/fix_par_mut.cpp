@@ -8,10 +8,10 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
-void clean_up_internal_nodes(MAT::Node* this_node,MAT::Tree& tree,std::unordered_set<size_t>& changed_nodes_local,std::unordered_set<size_t>& node_with_inconsistent_state);
+void clean_up_internal_nodes(MatOptimize::MAT::Node* this_node,MatOptimize::MAT::Tree& tree,std::unordered_set<size_t>& changed_nodes_local,std::unordered_set<size_t>& node_with_inconsistent_state);
 //add mutation m to parent_mutations, which represent the mutation of a node relative to root,
 //or update major allele if already present
-static void ins_mut(Mutation_Set &parent_mutations,Mutation_Annotated_Tree::Mutation &m) {
+static void ins_mut(Mutation_Set &parent_mutations,MatOptimize::Mutation_Annotated_Tree::Mutation &m) {
     auto temp = parent_mutations.insert(m);
     //other major allele of leaf node is also counted
     if (!temp.second) {
@@ -22,7 +22,7 @@ static void ins_mut(Mutation_Set &parent_mutations,Mutation_Annotated_Tree::Muta
             parent_mutations.erase(temp.first);
         } else {
             // update state
-            const_cast<MAT::Mutation&>(*temp.first).set_mut_one_hot(m.get_mut_one_hot());
+            const_cast<MatOptimize::MAT::Mutation&>(*temp.first).set_mut_one_hot(m.get_mut_one_hot());
         }
     } else {
         if (m.get_mut_one_hot()==m.get_ref_one_hot()) {
@@ -32,11 +32,11 @@ static void ins_mut(Mutation_Set &parent_mutations,Mutation_Annotated_Tree::Muta
 }
 //function for processing nodes recursively
 void fix_root_worker_recursive(
-    Mutation_Annotated_Tree::Node *root,
+    MatOptimize::Mutation_Annotated_Tree::Node *root,
     Mutation_Set parent_mutations,
     tbb::task_group &tg) {
     //add mutation of "root"
-    for (Mutation_Annotated_Tree::Mutation &m : root->mutations) {
+    for (MatOptimize::Mutation_Annotated_Tree::Mutation &m : root->mutations) {
         ins_mut(parent_mutations, m);
     }
     
@@ -48,7 +48,7 @@ void fix_root_worker_recursive(
         });
     }
 }
-void fix_parent(Mutation_Annotated_Tree::Tree &tree) {
+void fix_parent(MatOptimize::Mutation_Annotated_Tree::Tree &tree) {
     Mutation_Set mutations;
     tbb::task_group tg;
     fix_root_worker_recursive(tree.root, mutations, tg);
@@ -57,7 +57,7 @@ void fix_parent(Mutation_Annotated_Tree::Tree &tree) {
     tbb::parallel_for(tbb::blocked_range<size_t>(0,dfs.size()),[&dfs](tbb::blocked_range<size_t> r) {
         for (size_t idx=r.begin(); idx<r.end(); idx++) {
             auto & mut=dfs[idx]->mutations.mutations;
-            mut.erase(std::remove_if(mut.begin(), mut.end(), [](const MAT::Mutation& mut) {
+            mut.erase(std::remove_if(mut.begin(), mut.end(), [](const MatOptimize::MAT::Mutation& mut) {
                 return mut.get_mut_one_hot()==mut.get_par_one_hot();
             }),mut.end());
         }

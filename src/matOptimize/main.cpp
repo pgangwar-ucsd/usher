@@ -65,7 +65,7 @@ void log_flush(int) {
     fflush(movalbe_src_log);
 }
 namespace po = boost::program_options;
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 MAT::Node* get_LCA(MAT::Node* src,MAT::Node* dst);
 static void load_reference(std::string fasta_fname){
     auto fh=fopen(fasta_fname.c_str(), "r");

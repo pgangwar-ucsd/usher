@@ -27,7 +27,8 @@ extern bool use_bound;
 extern FILE* movalbe_src_log;
 void make_output_path(std::string& path_template) ;
 extern uint32_t num_threads;
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
+using namespace MatOptimize;
 extern std::atomic_bool interrupted;
 extern tbb::concurrent_unordered_map<MAT::Mutation, tbb::concurrent_unordered_map<std::string, nuc_one_hot>*,Mutation_Pos_Only_Hash,
        Mutation_Pos_Only_Comparator>

@@ -14,7 +14,7 @@
 #include <tbb/parallel_for.h>
 #include <vector>
 #include "src/usher-sampled/usher.hpp"
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 struct Temp_Idx_Tree_Node {
     MAT::Node* covering_node;
     int dfs_start_idx;

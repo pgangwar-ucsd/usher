@@ -19,6 +19,7 @@
 #include <sys/mman.h>
 #include <string>
 #include <unordered_map>
+using namespace MatOptimize;
 std::vector<int8_t> Mutation_Annotated_Tree::get_nuc_vec_from_id (int8_t nuc_id) {
     return get_nuc_vec(get_nuc(nuc_id));
 }
@@ -275,7 +276,7 @@ Mutation_Annotated_Tree::Tree Mutation_Annotated_Tree::create_tree_from_newick (
     return create_tree_from_newick_string(newick_string);
 }
 
-bool Mutation_Annotated_Tree::load_mutation_annotated_tree (std::string filename,Tree& tree) {
+bool Mutation_Annotated_Tree::load_mutation_annotated_tree (std::string filename, Mutation_Annotated_Tree::Tree& tree) {
     TIMEIT();
 
     Parsimony::data data;

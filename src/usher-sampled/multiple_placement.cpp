@@ -5,9 +5,9 @@
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
 #include <vector>
-static void place_sample(MAT::Tree &main_tree, const Sample_Muts &samp,
+static void place_sample(MatOptimize::MAT::Tree &main_tree, const Sample_Muts &samp,
                          Main_Tree_Target &target) {
-    MAT::Mutations_Collection sample_mutations;
+    MatOptimize::MAT::Mutations_Collection sample_mutations;
     discretize_mutations(target.sample_mutations, target.shared_mutations,
                          target.parent_node, sample_mutations);
     auto out = update_main_tree(sample_mutations, target.splited_mutations,
@@ -21,7 +21,7 @@ static void place_sample(MAT::Tree &main_tree, const Sample_Muts &samp,
 //void check_leaves(const MAT::Tree& T);
 void place_sample_multiple_tree(
     std::vector<Sample_Muts> &sample_to_place,
-    std::vector<MAT::Tree>& trees,
+    std::vector<MatOptimize::MAT::Tree>& trees,
     FILE *placement_stats_file, int max_trees) {
     fprintf(stderr, "Max tree size %d\n",max_trees);
     for (const auto &samp : sample_to_place) {

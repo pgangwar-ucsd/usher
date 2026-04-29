@@ -1,9 +1,9 @@
 #include "mutation_annotated_tree.hpp"
 #include <cstddef>
 #include <queue>
-using namespace Mutation_Annotated_Tree;
-bool check_grand_parent(const Mutation_Annotated_Tree::Node* node,const Mutation_Annotated_Tree::Node* grand_parent) {
-    const Mutation_Annotated_Tree::Node* cur=node;
+using namespace MatOptimize::Mutation_Annotated_Tree;
+bool check_grand_parent(const MatOptimize::Mutation_Annotated_Tree::Node* node,const MatOptimize::Mutation_Annotated_Tree::Node* grand_parent) {
+    const MatOptimize::Mutation_Annotated_Tree::Node* cur=node;
     while (cur) {
         if(cur==grand_parent) return true;
         cur=cur->parent;
@@ -12,23 +12,23 @@ bool check_grand_parent(const Mutation_Annotated_Tree::Node* node,const Mutation
 }
 
 /* === Node === */
-bool Mutation_Annotated_Tree::Node::is_leaf () const {
+bool MatOptimize::Mutation_Annotated_Tree::Node::is_leaf () const {
     return (children.size() == 0);
 }
 
-bool Mutation_Annotated_Tree::Node::is_root() {
+bool MatOptimize::Mutation_Annotated_Tree::Node::is_root() {
     return (parent == NULL);
 }
 
 
-Mutation_Annotated_Tree::Node::Node (size_t id) {
+MatOptimize::Mutation_Annotated_Tree::Node::Node (size_t id) {
     node_id = id;
     have_masked=false;
     parent = NULL;
     mutations.clear();
 }
 
-Mutation_Annotated_Tree::Node::Node(const Node &other, Node *parent, Tree *tree,bool copy_mutations)
+MatOptimize::Mutation_Annotated_Tree::Node::Node(const Node &other, Node *parent, Tree *tree,bool copy_mutations)
     :  branch_length(other.branch_length),
        node_id(other.node_id), parent(parent) {
     clade_annotations=other.clade_annotations;
@@ -42,14 +42,14 @@ Mutation_Annotated_Tree::Node::Node(const Node &other, Node *parent, Tree *tree,
     }
     tree->register_node_serial(this);
 }
-Mutation_Annotated_Tree::Node* Mutation_Annotated_Tree::Tree::create_node (std::string const& identifier) {
+MatOptimize::Mutation_Annotated_Tree::Node* MatOptimize::Mutation_Annotated_Tree::Tree::create_node (std::string const& identifier) {
     Node* n = create_node();
     node_names.emplace(n->node_id,identifier);
     node_name_to_idx_map.emplace(identifier,n->node_id);
     return n;
 }
 
-Mutation_Annotated_Tree::Node* Mutation_Annotated_Tree::Tree::create_node () {
+MatOptimize::Mutation_Annotated_Tree::Node* MatOptimize::Mutation_Annotated_Tree::Tree::create_node () {
     auto new_node_id=node_idx++;
     Node* n = new Node(new_node_id);
     size_t num_annotations = get_num_annotations();
@@ -58,10 +58,10 @@ Mutation_Annotated_Tree::Node* Mutation_Annotated_Tree::Tree::create_node () {
     return n;
 }
 
-Node* Mutation_Annotated_Tree::Tree::get_node_c_str (const char* identifier) const {
+Node* MatOptimize::Mutation_Annotated_Tree::Tree::get_node_c_str (const char* identifier) const {
     return get_node(std::string(identifier));
 }
-int Mutation_Annotated_Tree::Tree::get_node_id_c_str (const char* identifier) const {
+int MatOptimize::Mutation_Annotated_Tree::Tree::get_node_id_c_str (const char* identifier) const {
     auto iter=node_name_to_idx_map.find(identifier);
     if (iter==node_name_to_idx_map.end()) {
         return -1;
@@ -69,7 +69,7 @@ int Mutation_Annotated_Tree::Tree::get_node_id_c_str (const char* identifier) co
         return iter->second;
     }
 }
-void Mutation_Annotated_Tree::Tree::rename_node(size_t old_nid, std::string new_nid) {
+void MatOptimize::Mutation_Annotated_Tree::Tree::rename_node(size_t old_nid, std::string new_nid) {
     if (new_nid=="") {
         auto iter=node_names.find(old_nid);
         if (iter!=node_names.end()) {
@@ -103,7 +103,7 @@ nuc_one_hot get_parent_state(Node* ancestor,int position) {
     }
     return Mutation::refs[position];
 }
-void Mutation_Annotated_Tree::Node::populate_ignored_range() {
+void MatOptimize::Mutation_Annotated_Tree::Node::populate_ignored_range() {
     ignore.clear();
     for (const auto& mut : mutations) {
         if (mut.get_all_major_allele()==0xf) {
@@ -118,7 +118,7 @@ void Mutation_Annotated_Tree::Node::populate_ignored_range() {
         ignore.emplace_back(INT_MAX,INT_MAX);
     }
 }
-size_t Mutation_Annotated_Tree::Node::get_num_leaves() const {
+size_t MatOptimize::Mutation_Annotated_Tree::Node::get_num_leaves() const {
     if (children.empty()) {
         return 1;
     }

@@ -22,9 +22,9 @@ if ("${VERSION_PATCH}" MATCHES "[0-9]+")
 endif()
 message(STATUS "${usher_VERSION}")
 
-if(NOT APPLE)
-  add_link_options("-Wl,--undefined-version")
-endif()
+#if(NOT APPLE)
+#  add_link_options("-Wl,--undefined-version")
+#endif()
 
 include(FetchContent)
 set(TBB_VERSION "v2022.2.0")
@@ -43,7 +43,8 @@ configure_file(src/version.hpp.in version.hpp)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pipe -g -ggdb3 -Wno-unused-function  -Wno-deprecated-declarations") 
 #-DDEBUG_PARSIMONY_SCORE_CHANGE_CORRECT -fsanitize=address -DCHECK_PAR_MAIN  -DEASY_DEBUG -DSTOP_ON_ERROR  -DDETAILED_MERGER_CHECK -O0
-set(CMAKE_CXX_FLAGS_DEBUG "  -fno-eliminate-unused-debug-symbols -O0")
+set(CMAKE_CXX_FLAGS_DEBUG " -fsanitize=address -fno-eliminate-unused-debug-symbols -O0")
+#set(CMAKE_CXX_FLAGS_DEBUG "  -fno-eliminate-unused-debug-symbols -O0")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-DNDEBUG -O3")
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 ")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -77,9 +78,12 @@ AUX_SOURCE_DIRECTORY(src/matOptimize/apply_move patch_tree)
 AUX_SOURCE_DIRECTORY(src/check_samples_place check_samples_place) 
 file(GLOB MATUTIL_SRCS "src/matUtils/*.cpp" "src/matUtils/*.hpp")
 file(GLOB RIPPLES_SRCS "src/ripples/*.cpp" "src/ripples/*.hpp")
+file(GLOB RIPPLES_SERVER_SRCS "src/ripples/server/*.cpp" "src/ripples/server/*.hpp")
 file(GLOB USHER_SAMPLED_SRCS "src/usher-sampled/static_tree_mapper/*" "src/usher-sampled/*.cpp" "src/usher-sampled/*.hpp")
 file(GLOB RIPPLES_FAST_SRCS "src/ripples/ripples_fast/*.cpp" "src/ripples/ripples_fast/*.hpp")
 file(GLOB RIPPLES_UTILS_SRCS "src/ripples/util/*.cpp" "src/ripples/util/*.hpp")
+file(GLOB RIPPLES_COPY_UTIL_SRCS "src/ripples/util/copy/*.cpp" "src/ripples/util/copy/*.hpp")
+file(GLOB RIPPLES_FILTRATION_SRCS "src/ripples/post_filtration/*.cpp" "src/ripples/post_filtration/*.hpp")
 
 set_source_files_properties(src/mutation_annotated_tree.cpp PROPERTIES COMPILE_FLAGS -O3)
 set_source_files_properties(src/usher-sampled/wait_debug.cpp PROPERTIES COMPILE_FLAGS -O0)
@@ -108,6 +112,7 @@ if(DEFINED Protobuf_PATH)
             src/usher_mapper.cpp
             ${RIPPLES_SRCS}
         )
+
         if(NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
             add_executable(ripples-fast
                 src/mutation_annotated_tree.cpp
@@ -115,6 +120,7 @@ if(DEFINED Protobuf_PATH)
                 ${RIPPLES_FAST_SRCS}
             )
         endif()
+
         add_executable(usher-sampled
             ${USHER_SAMPLED_SRCS}
             src/matOptimize/main_helper.cpp
@@ -226,6 +232,7 @@ if(DEFINED Protobuf_PATH)
                 TARGET ripples-fast 
                 PROTOS parsimony.proto)
         endif()
+
         protobuf_generate(
             LANGUAGE cpp
             TARGET compareVCF 
@@ -321,6 +328,7 @@ if(DEFINED Protobuf_PATH)
             ${TAXO_HDRS}
         )
 
+        
         add_executable(ripples
             src/mutation_annotated_tree.cpp
             src/usher_mapper.cpp
@@ -497,6 +505,19 @@ if(DEFINED Protobuf_PATH)
                 src/matOptimize/main_load_tree.cpp
                 src/matOptimize/priority_conflict_resolver.cpp
                 src/usher-sampled/driver/socket.cpp
+                src/mutation_annotated_tree.cpp
+                src/usher_mapper.cpp
+                src/usher_common.cpp
+                # ripples server
+                src/ripples/ripples_fast/ripples_util.cpp
+                src/ripples/ripples_fast/ripples.cpp
+                src/ripples/ripples_fast/ripple_aux.cpp
+                src/ripples/ripples_fast/ripples_mapper.cpp
+                src/ripples/ripples_fast/ripple_merger.cpp
+                src/ripples/util/text_parser.cpp
+                ${RIPPLES_SERVER_SRCS}
+                ${RIPPLES_COPY_UTIL_SRCS}
+                ${RIPPLES_FILTRATION_SRCS}
                 ${patch_tree}
                 ${New_Profitable_Moves_Enumerators}
             )
@@ -566,6 +587,7 @@ TARGET_LINK_LIBRARIES(ripplesInit PRIVATE stdc++  ${Boost_LIBRARIES} TBB::tbb ${
 
 TARGET_COMPILE_OPTIONS(ripples PRIVATE)
 TARGET_LINK_LIBRARIES(ripples PRIVATE stdc++  ${Boost_LIBRARIES} TBB::tbb ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
+
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     TARGET_LINK_LIBRARIES(ripples-fast PRIVATE stdc++  ${Boost_LIBRARIES} TBB::tbb ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
 endif()

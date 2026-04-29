@@ -3,7 +3,7 @@
 #include <string>
 #ifndef NDEBUG
 #include "../mutation_annotated_tree.hpp"
-namespace MAT = Mutation_Annotated_Tree;
+namespace MAT = MatOptimize::Mutation_Annotated_Tree;
 #include "../Fitch_Sankoff.hpp"
 #include "../check_samples.hpp"
 #include <unordered_set>
