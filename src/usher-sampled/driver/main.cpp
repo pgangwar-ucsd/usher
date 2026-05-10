@@ -297,7 +297,7 @@ static int leader_thread(
 
     if (options.no_add) {
         std::atomic_size_t curr_idx(0);
-        assign_descendant_muts(tree);
+        assign_descendant_muts(tree, num_threads);
         if (process_count>1) {
             tree.MPI_send_tree();
         }

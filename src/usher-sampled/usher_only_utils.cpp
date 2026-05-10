@@ -2,6 +2,7 @@
 #include "src/usher-sampled/usher.hpp"
 #include <tbb/parallel_for.h>
 extern int process_count;
+extern unsigned int num_threads;
 int prep_tree(MAT::Tree &tree) {
     if (!tree.root->mutations.empty()) {
         auto node = tree.create_node();
@@ -10,7 +11,7 @@ int prep_tree(MAT::Tree &tree) {
         ori_root->parent = node;
         tree.root = node;
     }
-    assign_descendant_muts(tree);
+    assign_descendant_muts(tree, num_threads);
     assign_levels(tree.root);
     return set_descendant_count(tree.root);
 }
@@ -86,7 +87,7 @@ bool sort_samples(const Leader_Thread_Options& options,std::vector<Sample_Muts>&
             fprintf(stderr, "Computing parsimony scores and number of "
                     "parsimony-optimal placements for new samples and "
                     "using them to sort the samples.\n");
-            assign_descendant_muts(tree);
+            assign_descendant_muts(tree, num_threads);
             assign_levels(tree.root);
             set_descendant_count(tree.root);
             if (process_count>1) {

@@ -9,6 +9,7 @@
 #include <mpi.h>
 #include <tuple>
 #include "src/usher-sampled/static_tree_mapper/index.hpp"
+extern unsigned int num_threads;
 void check_parent(MatOptimize::MAT::Node* root,MatOptimize::MAT::Tree& tree) {
     if (root!=tree.get_node(root->node_id)) {
         fprintf(stderr, "dict mismatch at node %zu\n",root->node_id);
@@ -209,7 +210,7 @@ void follower_place_sample(MatOptimize::MAT::Tree &main_tree,int batch_size,bool
     bool is_first=true;
     std::thread tree_update_thread(recv_and_place_follower,std::ref(main_tree),std::ref(deleted_nodes),dry_run);
     {
-        tf::Executor executor;
+        tf::Executor executor(num_threads);
 
         // Finder function based on dry_run mode
         auto finder_func = [&](Sample_Muts* to_search) {

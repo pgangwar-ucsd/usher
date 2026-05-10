@@ -24,6 +24,7 @@
 #include <mpi.h>
 #include "src/usher-sampled/mapper.hpp"
 #include "src/usher-sampled/static_tree_mapper/index.hpp"
+extern unsigned int num_threads;
 std::atomic_size_t backlog;
 enum Status {OK,DONE,NOTHING};
 //std::atomic_size_t backlog_prep;
@@ -700,7 +701,7 @@ void place_sample_leader(std::vector<Sample_Muts> &sample_to_place,
     tbb::concurrent_bounded_queue<Preped_Sample_To_Place*> send_queue;
     {
         std::atomic_bool stop(false);
-        tf::Executor executor;
+        tf::Executor executor(num_threads);
         found_place_t found_queue;
         print_queue_t print_queue;
         std::vector<int> descendant_count;

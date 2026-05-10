@@ -114,7 +114,7 @@ void place_sample_leader(std::vector<Sample_Muts> &sample_to_place,
 void fix_parent(MatOptimize::Mutation_Annotated_Tree::Tree &tree);
 void convert_mut_type(const std::vector<MatOptimize::MAT::Mutation> &in,
                       std::vector<To_Place_Sample_Mutation> &out);
-void assign_descendant_muts(MatOptimize::MAT::Tree &in);
+void assign_descendant_muts(MatOptimize::MAT::Tree &in, uint32_t num_threads);
 void assign_levels(MatOptimize::MAT::Node* root);
 void follower_place_sample(MatOptimize::MAT::Tree &main_tree,int batch_size,bool dry_run);
 void check_parent(MatOptimize::MAT::Node* root,MatOptimize::MAT::Tree& tree);

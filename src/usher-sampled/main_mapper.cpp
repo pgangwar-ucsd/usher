@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+extern unsigned int num_threads;
 int switch_to_serial_threshold=10;
 template <typename Hook1, typename Hook2> struct Combine_Hook {
     Hook1 hook1;
@@ -489,7 +490,7 @@ place_main_tree(const std::vector<To_Place_Sample_Mutation> &mutations,
     }
     output.targets.push_back(target);
 
-    tf::Executor executor;
+    tf::Executor executor(num_threads);
     tf::Taskflow taskflow;
 
     taskflow.emplace([&](tf::Subflow& sf) {
