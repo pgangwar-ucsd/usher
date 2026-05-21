@@ -390,6 +390,8 @@ std::string get_options(FILE *f, Leader_Thread_Options &options,std::string& ext
     options.out_options.outdir = path.generic_string();
     options.override_mutations = false;
     options.first_n_samples=INT_MAX;
+    options.keep_n_tree = 1;
+    options.out_options.only_one_tree = true;
     return mat_path;
 }
 static void child_proc(int fd, TreeCollectionPtr &trees_ptr) {
