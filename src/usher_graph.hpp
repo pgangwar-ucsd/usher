@@ -40,6 +40,7 @@ struct Missing_Sample {
         mutations.clear();
         num_ambiguous = 0;
     }
+    Missing_Sample (const std::string& sample_name, std::vector<MAT::Mutation>&mutations): name(sample_name), mutations(mutations), num_ambiguous(0){}
 
     bool operator==(const Missing_Sample& other) const {
         return (*this).name == other.name;

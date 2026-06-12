@@ -84,6 +84,7 @@ file(GLOB RIPPLES_FAST_SRCS "src/ripples/ripples_fast/*.cpp" "src/ripples/ripple
 file(GLOB RIPPLES_UTILS_SRCS "src/ripples/util/*.cpp" "src/ripples/util/*.hpp")
 file(GLOB RIPPLES_COPY_UTIL_SRCS "src/ripples/util/copy/*.cpp" "src/ripples/util/copy/*.hpp")
 file(GLOB RIPPLES_FILTRATION_SRCS "src/ripples/post_filtration/*.cpp" "src/ripples/post_filtration/*.hpp")
+file(GLOB RIPPLES_SIM_SRCS "src/ripples/sim/*.cpp" "src/ripples/sim/*.hpp")
 
 set_source_files_properties(src/mutation_annotated_tree.cpp PROPERTIES COMPILE_FLAGS -O3)
 set_source_files_properties(src/usher-sampled/wait_debug.cpp PROPERTIES COMPILE_FLAGS -O0)
@@ -111,6 +112,20 @@ if(DEFINED Protobuf_PATH)
             src/mutation_annotated_tree.cpp
             src/usher_mapper.cpp
             ${RIPPLES_SRCS}
+        )
+
+        add_executable(ripples-sim
+            src/mutation_annotated_tree.cpp
+            src/usher_mapper.cpp
+            src/usher_common.cpp
+            src/ripples/util/text_parser.cpp
+            src/ripples/server/ripples_runner.cpp
+            src/ripples/ripples_fast/ripples_util.cpp
+            src/ripples/ripples_fast/ripples.cpp
+            src/ripples/ripples_fast/ripple_merger.cpp
+            src/ripples/ripples_fast/ripples_mapper.cpp
+            src/ripples/ripples_fast/ripple_aux.cpp
+            ${RIPPLES_SIM_SRCS}
         )
 
         if(NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
@@ -288,6 +303,11 @@ if(DEFINED Protobuf_PATH)
             TARGET matUtils
             PROTOS taxodium.proto)
 
+        protobuf_generate(
+            LANGUAGE cpp
+            TARGET ripples-sim
+            PROTOS parsimony.proto)
+
         if(USHER_SERVER)
             protobuf_generate(
                 LANGUAGE cpp
@@ -378,6 +398,22 @@ if(DEFINED Protobuf_PATH)
             src/usher_mapper.cpp
             src/matUtils/describe.cpp
             ${RIPPLES_UTILS_SRCS}
+            ${PROTO_SRCS}
+            ${PROTO_HDRS}
+        )
+
+        add_executable(ripples-sim
+            src/mutation_annotated_tree.cpp
+            src/usher_mapper.cpp
+            src/usher_common.cpp
+            src/ripples/util/text_parser.cpp
+            src/ripples/server/ripples_runner.cpp
+            src/ripples/ripples_fast/ripples_util.cpp
+            src/ripples/ripples_fast/ripples.cpp
+            src/ripples/ripples_fast/ripple_merger.cpp
+            src/ripples/ripples_fast/ripples_mapper.cpp
+            src/ripples/ripples_fast/ripple_aux.cpp
+            ${RIPPLES_SIM_SRCS}
             ${PROTO_SRCS}
             ${PROTO_HDRS}
         )
@@ -587,6 +623,9 @@ TARGET_LINK_LIBRARIES(ripplesInit PRIVATE stdc++  ${Boost_LIBRARIES} TBB::tbb ${
 
 TARGET_COMPILE_OPTIONS(ripples PRIVATE)
 TARGET_LINK_LIBRARIES(ripples PRIVATE stdc++  ${Boost_LIBRARIES} TBB::tbb ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
+
+TARGET_COMPILE_OPTIONS(ripples-sim PRIVATE)
+TARGET_LINK_LIBRARIES(ripples-sim PRIVATE stdc++ ${Boost_LIBRARIES} TBB::tbb ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     TARGET_LINK_LIBRARIES(ripples-fast PRIVATE stdc++  ${Boost_LIBRARIES} TBB::tbb ${Protobuf_LIBRARIES}) # OpenMP::OpenMP_CXX)

@@ -25,12 +25,14 @@ struct ripples_parameters {
 
 struct ripples_runner {
     ripples_runner(MAT::Tree &tree, const std::vector<Missing_Sample> &samples,
-                   const ripples_parameters &params)
+                   const ripples_parameters &params,
+                   const std::string &result_file_suffix = "")
         : T(tree), samples_(samples), num_threads_(params.num_threads),
           branch_len_(params.branch_len),
           num_desc_search_(params.num_desc_search),
           num_desc_recomb_(params.num_desc_recomb),
-          ancestor_radius_(params.ancestor_radius), outdir_(params.outdir) {}
+          ancestor_radius_(params.ancestor_radius), outdir_(params.outdir),
+          result_file_suffix_(result_file_suffix) {}
 
     Status operator()() {
         // TODO: Unused constant parameters
@@ -67,7 +69,9 @@ struct ripples_runner {
         auto dfs = T.depth_first_expansion();
 
         for (const auto &sample : samples_) {
-            for (auto anc : T.rsearch(sample.name, ancestor_radius_, true)) {
+            auto ancestors = T.rsearch(sample.name, ancestor_radius_, true);
+            // for (auto anc : T.rsearch(sample.name, ancestor_radius_, true)) {
+            for (auto anc : ancestors) {
                 if (anc->is_root()) {
                     break;
                 }
@@ -105,7 +109,10 @@ struct ripples_runner {
         FILE *desc_file = fopen(desc_filename.c_str(), "w");
         fprintf(desc_file, "#node_id\tdescendants\n");
 
-        auto recomb_filename = outdir_ + "/recombination.tsv";
+        // auto recomb_filename = outdir_ + "/recombination.tsv";
+        auto recomb_filename =
+            outdir_ + "/recombination_" + result_file_suffix_ + ".tsv";
+
         fprintf(stderr, "Creating file %s to write recombination events\n",
                 recomb_filename.c_str());
         FILE *recomb_file = fopen(recomb_filename.c_str(), "w");
@@ -200,5 +207,6 @@ struct ripples_runner {
 
     uint32_t ancestor_radius_;
     std::string outdir_;
+    std::string result_file_suffix_;
 };
 }; // namespace ripples::server
